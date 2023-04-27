@@ -51,6 +51,7 @@ FnuMomCoord::FnuMomCoord(){
     z = 1450.0;
     type = "AB";
     cal_s = "Origin_log_modify";
+    nt = new TNtuple("nt", "", "Ptrue:Prec_RCM:sigma_error_RCM:Prec_inv_RCM:sigma_error_inv_RCM:Prec_Coord:sigma_error_Coord:Prec_inv_Coord:sigma_error_inv_Coord:Prec_inv_Coord_error:nicell:itype:trid:angle_diff_max:slope");
 
     std::cout << "success" << std::endl;
 }
@@ -336,7 +337,8 @@ void FnuMomCoord::CalcDataPosDiff(EdbTrackP *t, int plate_num){
 
 }
 
-void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
+// void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
+void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int plate_num){
     TGraphErrors *grCoord = new TGraphErrors();
     TGraph *grX = new TGraph();
     TGraph *grY = new TGraph();
@@ -465,7 +467,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, 
     grY->Draw("ap");
 
     c1->cd(5);
-    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d,  type = %s)", Prec_Coord, t->ID(), type));
+    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d,  type = %s)", 1.0/inverse_Coord, t->ID(), type));
     grCoord->GetXaxis()->SetTitle("Cell length");
     grCoord->GetYaxis()->SetTitle("RMS (#mum)");
     grCoord->GetYaxis()->SetTitleOffset(1.6);
@@ -473,7 +475,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, 
 
     c1->cd(6);
     TText tx;
-    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", Prec_Coord));
+    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
     tx.DrawTextNDC(0.1,0.8,Form("sigma_error(Coord) = %.3f micron", error_Coord));
     tx.DrawTextNDC(0.1,0.7,Form("slope = %.4f", slope));
     tx.DrawTextNDC(0.1,0.6,Form("1/Prec(Coord) = %.6f", inverse_Coord));
@@ -493,9 +495,17 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, 
     delete diff;
 }
 
-void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
+// void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
+void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int file_type){
     int plate_num = SetTrackArray(t, file_type);
     // printf("plate_num = %d\n", plate_num);
     CalcDataPosDiff(t, plate_num);
-    DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
+    // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
+    DrawDataMomGraphCoord(t, c1, file_name, plate_num);
+}
+
+void FnuMomCoord::GetRootFile(TString file_name){
+    TFile f(file_name + ".root", "recreate");
+    nt->Write();
+    f.Close();
 }

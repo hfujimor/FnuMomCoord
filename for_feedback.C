@@ -578,7 +578,9 @@ void ModiMakeMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, int plate_num
 
             // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
             // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype, t->ID(), max_angle_diff, slope);
-            nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), -999.0, slope);
+            
+            // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, 1.0/inverse_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), -999.0, slope);
+            
             // nt->Fill(ini_mom, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, -999.0, -999.0, -999.0, -999.0, icell, itype, t->ID(), max_angle_diff, slope);
 
         }
@@ -648,7 +650,7 @@ void ModiMakeMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, int plate_num
 
     c1->cd(6);
     TText tx;
-    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", Prec_Coord));
+    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
     tx.DrawTextNDC(0.1,0.8,Form("sigma_error(Coord) = %.3f micron", error_Coord));
     tx.DrawTextNDC(0.1,0.7,Form("slope = %.4f", slope));
     tx.DrawTextNDC(0.1,0.6,Form("1/Prec(Coord) = %.6f", inverse_Coord));
@@ -661,6 +663,9 @@ void ModiMakeMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, int plate_num
 
     c1->Print("nu_event_candidate.pdf");
 
+    nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, 1.0/inverse_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, -999.0, itype, t->ID(), -999.0, slope);
+            
+
     delete grX;
     delete grY;
     delete grTX;
@@ -669,7 +674,9 @@ void ModiMakeMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, int plate_num
     delete grCoord;
     delete diff;
 
-    printf("%.1f\n", Prec_Coord);
+    // printf("%.1f\n", 1.0/inverse_Coord);
+    printf("%d\t%.4f\t%d\t%.1f\n", t->GetSegmentFirst()->ID(), slope, plate_num, 1.0/inverse_Coord);
+
 }
 
 int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
@@ -743,15 +750,6 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
     for(int icell = 1; icell < icell_cut + 1; icell++){
         itype = 0;
 
-    //Get Coord inverse monentum
-        grCoord->Fit(Da4, "Q", "", 0, icell);
-        inverse_Coord = Da4->GetParameter(0);
-        inverse_Coord_error = Da4->GetParError(0);
-        error_Coord_in = Da4->GetParameter(1);
-        inverse_Coord = inverse_Coord < 0 ? -inverse_Coord : inverse_Coord;
-        error_Coord_in = error_Coord_in < 0 ? -error_Coord_in : error_Coord_in;
-        if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
-
     //Get Coord momentum
         Da3->SetParameters(ini_mom, sqrt(6)*smearing);
         gStyle->SetOptFit(0000);
@@ -763,6 +761,15 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
         error_Coord = error_Coord < 0 ? -error_Coord : error_Coord;
         if(Prec_Coord>7000) Prec_Coord=7000;
 
+    //Get Coord inverse monentum
+        Da4->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+        grCoord->Fit(Da4, "Q", "", 0, icell);
+        inverse_Coord = Da4->GetParameter(0);
+        inverse_Coord_error = Da4->GetParError(0);
+        error_Coord_in = Da4->GetParameter(1);
+        inverse_Coord = inverse_Coord < 0 ? -inverse_Coord : inverse_Coord;
+        error_Coord_in = error_Coord_in < 0 ? -error_Coord_in : error_Coord_in;
+        if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
 
         // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
         // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype, t->ID(), max_angle_diff, slope);
@@ -806,7 +813,7 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
     gStyle->SetOptFit(1111);
     gStyle->SetStatX(0.5);
     gStyle->SetStatY(0.9);
-    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (t->ID() = %d,  type = %s)", Prec_Coord, t->ID(), type));
+    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (t->ID() = %d,  type = %s)", 1.0/inverse_Coord, t->ID(), type));
     grCoord->GetXaxis()->SetTitle("Cell length");
     grCoord->GetYaxis()->SetTitle("RMS (#mum)");
     grCoord->GetYaxis()->SetTitleOffset(1.6);
@@ -814,7 +821,7 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
 
     c1->cd(6);
     TText tx;
-    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", Prec_Coord));
+    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
     tx.DrawTextNDC(0.1,0.8,Form("sigma_error(Coord) = %.3f micron", error_Coord));
     tx.DrawTextNDC(0.1,0.7,Form("slope = %.4f", slope));
     tx.DrawTextNDC(0.1,0.6,Form("1/Prec(Coord) = %.6f", inverse_Coord));
@@ -825,8 +832,9 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
     tx.DrawTextNDC(0.1,0.1,Form("ini_mom = %.1f  ini_smearing = %.1f", ini_mom, smearing));
 
     // c1->Print("nu_event_candidate.pdf");
+    printf("%d\t%.4f\t%d\t%.1f\n", t->ID(), slope, plate_num, 1.0/inverse_Coord);
 
-    return Prec_Coord;
+    return 1.0/inverse_Coord;
 }
 
 void EventRecoMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt){

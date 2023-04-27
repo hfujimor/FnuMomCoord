@@ -35,7 +35,7 @@
 
 #include "FnuMomCoord.hpp"
 
-int nseg_cut = 80;
+int nseg_cut = 85;
 // int nseg_cut = 180;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
@@ -73,7 +73,7 @@ void DataSetTrackVector(EdbPVRec *pvr){
 
 
 int main(){
-    TNtuple *nt = new TNtuple("nt", "", "Ptrue:Prec_RCM:sigma_error_RCM:Prec_inv_RCM:sigma_error_inv_RCM:Prec_Coord:sigma_error_Coord:Prec_inv_Coord:sigma_error_inv_Coord:Prec_inv_Coord_error:nicell:itype:trid:angle_diff_max:slope");
+    // TNtuple *nt = new TNtuple("nt", "", "Ptrue:Prec_RCM:sigma_error_RCM:Prec_inv_RCM:sigma_error_inv_RCM:Prec_Coord:sigma_error_Coord:Prec_inv_Coord:sigma_error_inv_Coord:Prec_inv_Coord_error:nicell:itype:trid:angle_diff_max:slope");
 	// TNtuple *nts = new TNtuple("nts","","sRMS_Coord:sRMS_RCM:sRMSerror_Coord:sRMSerror_RCM:trk_num:icell:type");  
     TCanvas *c1 = new TCanvas("c1");
     // TString file_name = "hogehoge";
@@ -90,15 +90,12 @@ int main(){
     mc.SetDataPara();
     mc.ShowPara();
     for(int i = 0; i < v_TrackP.size(); i++){
-        mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
+        // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
+        mc.CalcDataMomCoord(v_TrackP[i], c1, file_name, 0);
     }
 
-
     c1->Print(file_name + ".pdf]");
-
-    TFile f(file_name + ".root", "recreate");
-    nt->Write();
-    f.Close();
+    mc.GetRootFile(file_name);
 
     printf("selected track = %d\n", v_TrackP.size());
 

@@ -53,8 +53,11 @@ class FnuMomCoord {
         void SetZArray(char* fname);
         int SetTrackArray(EdbTrackP *t, int file_type);
         void CalcDataPosDiff(EdbTrackP *t, int plate_num);
-        void DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num);
-        void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
+        void DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int plate_num);
+        // void DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num);
+        void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int file_type = 0);
+        // void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
+        void GetRootFile(TString file_name);
 
         // member function
     private:
@@ -80,6 +83,7 @@ class FnuMomCoord {
         double delta_array[600];
         int allentryArray[40]; // keep allentry
         int nentryArray[40];
+        TNtuple *nt;
 };
 
 #endif
