@@ -1,5 +1,5 @@
-#ifndef _MEASCOORD_H_
-#define _MEASCOORD_H_
+#ifndef _FNUMOMCOORD_H_
+#define _FNUMOMCOORD_H_
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -36,13 +36,14 @@
 #include <EdbVertex.h>
 #include <EdbEDA.h>
 
-class MeasCoord {
+class FnuMomCoord {
 
     public:
-        MeasCoord();
-        ~MeasCoord();
+        FnuMomCoord();
+        ~FnuMomCoord();
         void ShowPara();
         void ShowZ();
+        void SetDataPara();
         void SetMotMCPara(double first_mom, double first_smear);
         std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index);
         double CalcTrackAngleDiff(EdbTrackP* t, int index);
@@ -53,7 +54,7 @@ class MeasCoord {
         int SetTrackArray(EdbTrackP *t, int file_type);
         void CalcDataPosDiff(EdbTrackP *t, int plate_num);
         void DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num);
-        void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type);
+        void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
 
         // member function
     private:

@@ -1,4 +1,4 @@
-#include "MeasCoord.hpp"
+#include "FnuMomCoord.hpp"
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -36,31 +36,30 @@
 #include <EdbEDA.h>
 
 
-// MeasCoord::MeasCoord() : nseg(95), icellMax(30), ini_mom(50), smearing(0.4), X0(4.571), zW(1.1), z(1450), type("AB"), cal_s("Origin_log_modify")
+// FnuMomCoord::FnuMomCoord() : nseg(95), icellMax(30), ini_mom(50), smearing(0.4), X0(4.571), zW(1.1), z(1450), type("AB"), cal_s("Origin_log_modify")
 // {
 //     std::cout << "success" << std::endl;
 // }
 
-MeasCoord::MeasCoord()
-{
+FnuMomCoord::FnuMomCoord(){
     nseg = 95;
     icellMax = 32; 
     ini_mom = 50.0;
-    smearing = 0.4; 
+    smearing = 0.4;
     X0 = 4.571; 
     zW = 1.1; 
     z = 1450.0;
     type = "AB";
     cal_s = "Origin_log_modify";
-    
+
     std::cout << "success" << std::endl;
 }
 
-MeasCoord::~MeasCoord(){
+FnuMomCoord::~FnuMomCoord(){
     std::cout << "success" << std::endl;
 }
 
-void MeasCoord::ShowPara(){
+void FnuMomCoord::ShowPara(){
     printf("nseg = %d\n", nseg);
     printf("icellMax = %d\n", icellMax);
     printf("ini_mom = %.1f\n", ini_mom);
@@ -74,13 +73,27 @@ void MeasCoord::ShowPara(){
     
 }
 
-void MeasCoord::ShowZ(){
+void FnuMomCoord::ShowZ(){
     printf("z = %.1f\n", z);
     printf("\n");
     
 }
 
-void MeasCoord::SetMotMCPara(double first_mom, double first_smear){
+void FnuMomCoord::SetDataPara(){
+    nseg = 95;
+    icellMax = 32; 
+    ini_mom = 50.0;
+    smearing = 0.4;
+    X0 = 4.571; 
+    zW = 1.1; 
+    z = 1450.0;
+    type = "AB";
+    cal_s = "Origin_log_modify";
+    
+    std::cout << "For the Data parameter" << std::endl;
+}
+
+void FnuMomCoord::SetMotMCPara(double first_mom, double first_smear){
     nseg = 100;
     icellMax = 40;
     ini_mom = first_mom;
@@ -91,10 +104,10 @@ void MeasCoord::SetMotMCPara(double first_mom, double first_smear){
     type = "AB";
     cal_s = "Origin_log_modify";
     
-    std::cout << "For the Mot MC sample" << std::endl;
+    std::cout << "For the Mot MC sample parameter" << std::endl;
 }
 
-std::pair<double, double> MeasCoord::CalcTrackAngle(EdbTrackP* t, int index) {
+std::pair<double, double> FnuMomCoord::CalcTrackAngle(EdbTrackP* t, int index) {
 	TGraph grx;
 	TGraph gry;
 
@@ -114,7 +127,7 @@ std::pair<double, double> MeasCoord::CalcTrackAngle(EdbTrackP* t, int index) {
 	return {tx, ty};
 }
 
-double MeasCoord::CalcTrackAngleDiff(EdbTrackP* t, int index){
+double FnuMomCoord::CalcTrackAngleDiff(EdbTrackP* t, int index){
 	std::pair<double, double> prv_theta = CalcTrackAngle(t, index-2);
 	std::pair<double, double> nxt_theta = CalcTrackAngle(t, index+1);
 
@@ -127,7 +140,7 @@ double MeasCoord::CalcTrackAngleDiff(EdbTrackP* t, int index){
 	return theta * 1000;
 }
 
-double MeasCoord::CalcTrackAngleDiffMax(EdbTrackP* t){
+double FnuMomCoord::CalcTrackAngleDiffMax(EdbTrackP* t){
 	double max_angle_diff = -1;
 
 	for (int i = 3; i < t->N()-2; i++) {
@@ -138,7 +151,7 @@ double MeasCoord::CalcTrackAngleDiffMax(EdbTrackP* t){
 	return max_angle_diff;
 }
 
-void MeasCoord::SetZArray(char *fname){
+void FnuMomCoord::SetZArray(char *fname){
 	FILE *fp; // FILE型構造体
 	// char fname[] = "z_coordinate_48_142.txt";
 	double f1;
@@ -164,7 +177,7 @@ void MeasCoord::SetZArray(char *fname){
 	fclose(fp); // ファイルを閉じる
 }
 
-int MeasCoord::SetTrackArray(EdbTrackP *t, int file_type = 0){
+int FnuMomCoord::SetTrackArray(EdbTrackP *t, int file_type = 0){
     int first_plate, plate_num, seg_count;
     double ini_x_pos, fin_x_pos, ini_y_pos, fin_y_pos, ini_z_pos, fin_z_pos, nloss;
 
@@ -244,7 +257,7 @@ int MeasCoord::SetTrackArray(EdbTrackP *t, int file_type = 0){
 
 }
 
-void MeasCoord::CalcDataPosDiff(EdbTrackP *t, int plate_num){
+void FnuMomCoord::CalcDataPosDiff(EdbTrackP *t, int plate_num){
 
     double sum_square;
     int first_plate = t->GetSegmentFirst()->Plate();
@@ -323,7 +336,7 @@ void MeasCoord::CalcDataPosDiff(EdbTrackP *t, int plate_num){
 
 }
 
-void MeasCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
+void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
     TGraphErrors *grCoord = new TGraphErrors();
     TGraph *grX = new TGraph();
     TGraph *grY = new TGraph();
@@ -394,18 +407,8 @@ void MeasCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TS
         if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
             itype = 0;
 
-        //Get Coord inverse monentum
-            grCoord->Fit(Da4, "Q", "", 0, icell);
-            inverse_Coord = Da4->GetParameter(0);
-            inverse_Coord_error = Da4->GetParError(0);
-            error_Coord_in = Da4->GetParameter(1);
-            inverse_Coord = inverse_Coord < 0 ? -inverse_Coord : inverse_Coord;
-            error_Coord_in = error_Coord_in < 0 ? -error_Coord_in : error_Coord_in;
-            if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
-
         //Get Coord momentum
             Da3->SetParameters(ini_mom, sqrt(6)*smearing);
-            gStyle->SetOptFit(0000);
             grCoord->Fit(Da3, "Q", "", 0, icell);
             Prec_Coord = Da3->GetParameter(0);
             error_Coord = Da3->GetParameter(1);
@@ -414,6 +417,16 @@ void MeasCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TS
             error_Coord = error_Coord < 0 ? -error_Coord : error_Coord;
             if(Prec_Coord>7000) Prec_Coord=7000;
 
+        //Get Coord inverse monentum
+            Da4->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+            grCoord->Fit(Da4, "Q", "", 0, icell);
+            gStyle->SetOptFit(0000);
+            inverse_Coord = Da4->GetParameter(0);
+            inverse_Coord_error = Da4->GetParError(0);
+            error_Coord_in = Da4->GetParameter(1);
+            inverse_Coord = inverse_Coord < 0 ? -inverse_Coord : inverse_Coord;
+            error_Coord_in = error_Coord_in < 0 ? -error_Coord_in : error_Coord_in;
+            if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
 
             // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
             nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
@@ -480,9 +493,9 @@ void MeasCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TS
     delete diff;
 }
 
-void MeasCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0){
+void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
     int plate_num = SetTrackArray(t, file_type);
-    printf("plate_num = %d\n", plate_num);
+    // printf("plate_num = %d\n", plate_num);
     CalcDataPosDiff(t, plate_num);
     DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
 }
