@@ -44,7 +44,7 @@ class FnuMomCoord {
         void ShowPara();
         void ShowZ();
         void SetDataPara();
-        void SetMotMCPara(double first_mom, double first_smear);
+        void SetMCPara(double first_mom, double first_smear);
         std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index);
         double CalcTrackAngleDiff(EdbTrackP* t, int index);
         double CalcTrackAngleDiffMax(EdbTrackP* t);
@@ -57,7 +57,7 @@ class FnuMomCoord {
         // void DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num);
         void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int file_type = 0);
         // void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
-        void GetRootFile(TString file_name);
+        void WriteRootFile(TString file_name);
 
         // member function
     private:

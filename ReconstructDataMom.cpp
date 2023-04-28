@@ -95,7 +95,7 @@ int main(){
     }
 
     c1->Print(file_name + ".pdf]");
-    mc.GetRootFile(file_name);
+    mc.WriteRootFile(file_name);
 
     printf("selected track = %d\n", v_TrackP.size());
 

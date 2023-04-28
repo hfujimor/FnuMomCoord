@@ -94,7 +94,7 @@ void FnuMomCoord::SetDataPara(){
     std::cout << "For the Data parameter" << std::endl;
 }
 
-void FnuMomCoord::SetMotMCPara(double first_mom, double first_smear){
+void FnuMomCoord::SetMCPara(double first_mom, double first_smear){
     nseg = 100;
     icellMax = 40;
     ini_mom = first_mom;
@@ -451,13 +451,14 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     diff->Draw("ap");
 
     c1->cd(3);
-    grTX->SetTitle(Form("tan,  trid = %d,  nseg = %d;plate number;", t->ID(), t->N()));
+    grTX->SetTitle(Form("tan,  trid = %d,  nseg = %d;plate number;mrad", t->ID(), t->N()));
     grTX->SetMarkerColor(2);
     grTX->SetMarkerStyle(7);
     grTY->SetMarkerColor(4);
     grTY->SetMarkerStyle(7);
     grTX->Draw("ap");
     grTY->Draw("ap");
+    grTY->SetTitleOffset(1.6);
 
     c1->cd(4);
     grY->SetTitle(Form("trid = %d,  nseg = %d", t->ID(), t->N()));
@@ -467,7 +468,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     grY->Draw("ap");
 
     c1->cd(5);
-    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d,  type = %s)", 1.0/inverse_Coord, t->ID(), type));
+    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", 1.0/inverse_Coord, t->ID()));
     grCoord->GetXaxis()->SetTitle("Cell length");
     grCoord->GetYaxis()->SetTitle("RMS (#mum)");
     grCoord->GetYaxis()->SetTitleOffset(1.6);
@@ -504,7 +505,7 @@ void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TString file_name,
     DrawDataMomGraphCoord(t, c1, file_name, plate_num);
 }
 
-void FnuMomCoord::GetRootFile(TString file_name){
+void FnuMomCoord::WriteRootFile(TString file_name){
     TFile f(file_name + ".root", "recreate");
     nt->Write();
     f.Close();

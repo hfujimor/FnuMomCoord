@@ -679,7 +679,7 @@ void ModiMakeMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, int plate_num
 
 }
 
-int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
+float SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
     TCanvas *c1 = new TCanvas("c1");
     TGraphErrors *grCoord = new TGraphErrors();
     TGraph *grX = new TGraph();
@@ -859,7 +859,7 @@ void CalcMomentum(int nc = 0){
     EdbTrackP *t = eda->GetSelectedTrack(0);
     int plate_num = SetTrackArray(t);
     SelectedCalcPosDiff(t, plate_num, nc);
-    int Prec = SelectedMakeMomGraphCoord(t, plate_num);
+    float Prec = SelectedMakeMomGraphCoord(t, plate_num);
     printf("Prec = %.1f\n", Prec);
 }
 
