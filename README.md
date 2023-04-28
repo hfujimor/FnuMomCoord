@@ -10,16 +10,13 @@
 
 # About for_edaevent.C(TCut cut_parameter)
 1 `root -l 'for_edaevent.C("cut_parameter")'`を実行
-
-2 GUIが起動
-<img width="500" src=figure/gui.png>
-
-3 測定したい飛跡を選択
-<img width="500" src=figure/select_track.png>
-
+2 GUIが起動<br>
+<img width="500" src=figure/gui.png><br>
+3 測定したい飛跡を選択<br>
+<img width="500" src=figure/select_track.png><br>
 4 `CalcMomentum(int nc)`を実行
-以下のグラフが描画＋測定結果を出力
-<img width="500" src=figure/RecoMom.png>
+以下のグラフが描画＋測定結果を出力<br>
+<img width="500" src=figure/RecoMom.png><br>
 グラフは、(1, 1)Z-X, (2, 1)Z-Y, (2, 2)RMSとFit関数, (1, 3)tanx, (2, 3)parameter
 ```
 root [1] CalcMomentum()
