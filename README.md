@@ -9,14 +9,14 @@
 `WriteRootFile(TString file_name)`　.root fileを引数の名前で出力<br>
 
 # About for_edaevent.C(TCut cut_parameter)
-1 `root -l 'for_edaevent.C("cut_parameter")'`を実行<br>
+1 `root -l 'for_edaevent.C("cut_parameter")'`を実行<br><br>
 2 GUIが起動<br>
-<img width="500" src=figure/gui.png><br>
+<img width="500" src=figure/gui.png><br><br>
 3 測定したい飛跡を選択<br>
-<img width="500" src=figure/select_track.png><br>
+<img width="500" src=figure/select_track.png><br><br>
 4 `CalcMomentum(int nc)`を実行<br>
 以下のグラフが描画＋測定結果を出力<br>
-<img width="500" src=figure/RecoMom.png><br>
+<img width="500" src=figure/RecoMom.png><br><br>
 グラフは、(1, 1)Z-X, (2, 1)Z-Y, (2, 2)RMSとFit関数, (1, 3)tanx, (2, 3)parameter<br>
 ```
 root [1] CalcMomentum()
