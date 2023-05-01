@@ -30,6 +30,7 @@
 #include <TRint.h>
 #include <TCut.h>
 #include <TStyle.h>
+#include<TMultiGraph.h>
 
 #include <EdbDataSet.h>
 #include <EdbEDAUtil.h>

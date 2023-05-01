@@ -29,6 +29,7 @@
 #include <TRint.h>
 #include <TCut.h>
 #include <TStyle.h>
+#include<TMultiGraph.h>
 
 #include <EdbDataSet.h>
 #include <EdbEDAUtil.h>
@@ -342,9 +343,12 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     TGraphErrors *grCoord = new TGraphErrors();
     TGraph *grX = new TGraph();
     TGraph *grY = new TGraph();
+    TGraph *grdispX = new TGraph();
+    TGraph *grdispY = new TGraph();
     TGraph *grTX = new TGraph();
     TGraph *grTY = new TGraph();
     TGraph *diff = new TGraph();
+    TMultiGraph *grdisp = new TMultiGraph();
 
     float rms_RCM, rms_Coord;
     float rmserror_RCM, rmserror_Coord;
@@ -362,11 +366,34 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
         grY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->Y());
     }
 
+	grX->Fit("pol1", "Q");
+	grY->Fit("pol1", "Q");
+
+	double intercept_x = grX->GetFunction("pol1")->GetParameter(0);
+	double intercept_y = grY->GetFunction("pol1")->GetParameter(0);
+
+	double slope_x = grX->GetFunction("pol1")->GetParameter(1);
+	double slope_y = grY->GetFunction("pol1")->GetParameter(1);
+
+    double max_disp = 0;
+    double min_disp = 0;
     for(int i = 0; i < t->N(); i++){
-        ith = grTX->GetN();
-        grTX->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TX());
-        grTY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TY());
+        ith = grdispX->GetN();
+        int plate_current = t->GetSegment(i)->Plate();
+        double disp_x = t->GetSegment(i)->X() - (slope_x*plate_current + intercept_x);
+        double disp_y = t->GetSegment(i)->Y() - (slope_y*plate_current + intercept_y);
+        max_disp = std::max(max_disp, std::max(disp_x, disp_y));
+        min_disp = std::min(min_disp, std::min(disp_x, disp_y));
+
+        grdispX->SetPoint(ith, t->GetSegment(i)->Plate(), disp_x);
+        grdispY->SetPoint(ith, t->GetSegment(i)->Plate(), disp_y);
     }
+
+    // for(int i = 0; i < t->N(); i++){
+    //     ith = grTX->GetN();
+    //     grTX->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TX());
+    //     grTY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TY());
+    // }
 
 	double max_angle_diff = -1;
     for(int i = 3; i < t->N()-2; i++){
@@ -450,15 +477,22 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     diff->SetMarkerStyle(7);
     diff->Draw("ap");
 
-    c1->cd(3);
-    grTX->SetTitle(Form("tan,  trid = %d,  nseg = %d;plate number;mrad", t->ID(), t->N()));
-    grTX->SetMarkerColor(2);
-    grTX->SetMarkerStyle(7);
-    grTY->SetMarkerColor(4);
-    grTY->SetMarkerStyle(7);
-    grTX->Draw("ap");
-    grTY->Draw("ap");
-    grTY->SetTitleOffset(1.6);
+    c1->cd(3)->DrawFrame(45, min_disp - 5.0, 145, max_disp + 5.0, Form("#delta,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
+    grdispX->SetMarkerColor(kRed);
+    grdispY->SetMarkerColor(kBlue);
+    grdisp->GetYaxis()->SetTitleOffset(1.6);
+    grdisp->Add(grdispX, "p");
+    grdisp->Add(grdispY, "p");
+    grdisp->Draw("");
+
+    // grTX->SetTitle(Form("tan,  trid = %d,  nseg = %d;plate number;mrad", t->ID(), t->N()));
+    // grTX->SetMarkerColor(2);
+    // grTX->SetMarkerStyle(7);
+    // grTY->SetMarkerColor(4);
+    // grTY->SetMarkerStyle(7);
+    // grTX->Draw("ap");
+    // grTY->Draw("ap");
+    // grTY->SetTitleOffset(1.6);
 
     c1->cd(4);
     grY->SetTitle(Form("trid = %d,  nseg = %d", t->ID(), t->N()));
@@ -490,8 +524,11 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
 
     delete grX;
     delete grY;
-    delete grTX;
-    delete grTY;
+    // delete grTX;
+    // delete grTY;
+    delete grdispX;
+    delete grdispY;
+    delete grdisp;
     delete grCoord;
     delete diff;
 }
@@ -499,7 +536,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
 // void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
 void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int file_type){
     int plate_num = SetTrackArray(t, file_type);
-    // printf("plate_num = %d\n", plate_num);
+    // printf("plate_num = %d\tnpl = %d\n", plate_num, t->Npl());
     CalcDataPosDiff(t, plate_num);
     // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
     DrawDataMomGraphCoord(t, c1, file_name, plate_num);

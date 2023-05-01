@@ -27,6 +27,7 @@
 #include <TRint.h>
 #include <TCut.h>
 #include <TStyle.h>
+#include<TMultiGraph.h>
 
 #include <EdbDataSet.h>
 #include <EdbEDAUtil.h>
@@ -35,7 +36,7 @@
 
 #include "FnuMomCoord.hpp"
 
-int nseg_cut = 85;
+int nseg_cut = 87;
 // int nseg_cut = 180;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
@@ -90,6 +91,7 @@ int main(){
     mc.SetDataPara();
     mc.ShowPara();
     for(int i = 0; i < v_TrackP.size(); i++){
+    // for(int i = 0; i < 2; i++){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
         mc.CalcDataMomCoord(v_TrackP[i], c1, file_name, 0);
     }
