@@ -31,6 +31,43 @@ char *type = "AB";
 // std::vector<EdbTrackP*> v_TrackP;  //keep EdbTrackP
 char *cal_s = "Origin_log_modify"; // modify log, radiation length and typeAB error
 
+std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index) {
+	TGraph grx;
+	TGraph gry;
+
+	for(int i = index-1; i <= index+1; i++){
+		EdbSegP* s = t->GetSegment(i);
+
+		grx.SetPoint(i-index+1, s->Z(), s->X());
+		gry.SetPoint(i-index+1, s->Z(), s->Y());
+	}
+
+	grx.Fit("pol1", "Q");
+	gry.Fit("pol1", "Q");
+
+	// double tx = grx.GetFunction("pol1") -> GetParameter(1);
+	// double ty = gry.GetFunction("pol1") -> GetParameter(1);
+	std::pair<double, double> txy;
+    txy.first = grx.GetFunction("pol1") -> GetParameter(1);
+	txy.second = gry.GetFunction("pol1") -> GetParameter(1);
+
+    return txy;
+	// return {tx, ty};
+}
+
+double CalcTrackAngleDiff(EdbTrackP* t, int index){
+	std::pair<double, double> prv_theta = CalcTrackAngle(t, index-2);
+	std::pair<double, double> nxt_theta = CalcTrackAngle(t, index+1);
+
+	double thx1 = prv_theta.first;
+	double thy1 = prv_theta.second;
+	double thx2 = nxt_theta.first;
+	double thy2 = nxt_theta.second;
+
+	double theta = sqrt((thx1-thx2)*(thx1-thx2) + (thy1-thy2)*(thy1-thy2));
+	return theta * 1000;
+}
+
 void SetZArray(char *fname){
 	FILE *fp; // FILE型構造体
 	// char fname[] = "z_coordinate_48_142.txt";
@@ -207,14 +244,14 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
         grTY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TY());
     }
 
-	// double max_angle_diff = -1;
-    // for(int i = 3; i < t->N()-2; i++){
-    //     double angle_diff = CalcTrackAngleDiff(t, i);
-    //     if (angle_diff > max_angle_diff) max_angle_diff = angle_diff;
-    //     EdbSegP *s = t->GetSegment(i);
-    //     diff->SetPoint(diff->GetN(), s->Plate(), angle_diff);
-    //     // printf("i = %d, diff theta = %f\n", s->Plate(), angle_diff);
-    // }
+	double max_angle_diff = -1;
+    for(int i = 3; i < t->N()-2; i++){
+        double angle_diff = CalcTrackAngleDiff(t, i);
+        if (angle_diff > max_angle_diff) max_angle_diff = angle_diff;
+        EdbSegP *s = t->GetSegment(i);
+        diff->SetPoint(diff->GetN(), s->Plate(), angle_diff);
+        // printf("i = %d, diff theta = %f\n", s->Plate(), angle_diff);
+    }
 
     for(int i = 0; i < icell_cut; i++){
         itype = 0;
@@ -310,7 +347,7 @@ int SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
     gStyle->SetOptFit(1111);
     gStyle->SetStatX(0.5);
     gStyle->SetStatY(0.9);
-    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (t->ID() = %d,  type = %s)", 1.0/inverse_Coord, t->ID(), type));
+    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (t->ID() = %d)", 1.0/inverse_Coord, t->ID()));
     grCoord->GetXaxis()->SetTitle("Cell length");
     grCoord->GetYaxis()->SetTitle("RMS (#mum)");
     grCoord->GetYaxis()->SetTitleOffset(1.6);
