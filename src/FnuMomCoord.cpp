@@ -30,6 +30,7 @@
 #include <TCut.h>
 #include <TStyle.h>
 #include<TMultiGraph.h>
+#include<TPaveStats.h>
 
 #include <EdbDataSet.h>
 #include <EdbEDAUtil.h>
@@ -259,7 +260,7 @@ int FnuMomCoord::SetTrackArray(EdbTrackP *t, int file_type = 0){
 
 }
 
-void FnuMomCoord::CalcDataPosDiff(EdbTrackP *t, int plate_num){
+void FnuMomCoord::CalcPosDiff(EdbTrackP *t, int plate_num){
 
     double sum_square;
     int first_plate = t->GetSegmentFirst()->Plate();
@@ -338,8 +339,90 @@ void FnuMomCoord::CalcDataPosDiff(EdbTrackP *t, int plate_num){
 
 }
 
+// void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
+void FnuMomCoord::CalcMomCoord(EdbTrackP *t){
+    TGraphErrors *grCoord = new TGraphErrors();
+    float rms_RCM, rms_Coord;
+    float rmserror_RCM, rmserror_Coord;
+    float Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error;
+    float tanx, tany, slope;
+    int ith, itype;
+
+	double max_angle_diff = CalcTrackAngleDiffMax(t);
+
+    for(int i = 0; i < icell_cut; i++){
+        itype = 0;
+        float j = 1.0;
+
+// calculate Coord error bar
+        if(cal_CoordArray[i] <= 0.0) 
+            continue;
+        rms_Coord = sqrt(cal_CoordArray[i]);
+        rmserror_Coord = rms_Coord / sqrt(allentryArray[i]);
+        if(cal_s=="Origin_log_modify") {
+            // rmserror_Coord = rms_Coord / sqrt(nentryArray[i]);
+            rmserror_Coord = rms_Coord / sqrt((t->Npl()-1.0) / (1.0*(i+1.0)));
+            // if(type=="AB") {
+            //     rmserror_Coord = rms_Coord / sqrt((nseg-1.0) / (2.0*(i+1.0)));
+            // }
+        }
+        if(i==0||i==1||i==3||i==7||i==15||i==31){
+            ith = grCoord->GetN();
+            grCoord->SetPoint(ith, i+1, rms_Coord);
+            grCoord->SetPointError(ith, 0, rmserror_Coord);
+            // nts->Fill(rms_Coord, rms_RCM, rmserror_Coord, rmserror_RCM, trk_num + icount*ntrk, i+1, itype);
+            //nts("sRMS_Coord:sRMS_RCM:sRMSerror_Coord:sRMSerror_RCM:trk_num:nicell:itype")
+        }
+    }
+
+// log and modify radiation length
+    TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
+    TF1 *Da3 = new TF1("Da3", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
+    for(int icell = 1; icell < icell_cut + 1; icell++){
+        if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
+            itype = 0;
+
+        //Get Coord momentum
+            Da3->SetParameters(ini_mom, sqrt(6)*smearing);
+            grCoord->Fit(Da3, "Q", "", 0, icell);
+            Prec_Coord = Da3->GetParameter(0);
+            error_Coord = Da3->GetParameter(1);
+            Ptrue = ini_mom; // zanteitekina P
+            Prec_Coord = Prec_Coord < 0 ? -Prec_Coord : Prec_Coord;
+            error_Coord = error_Coord < 0 ? -error_Coord : error_Coord;
+            if(Prec_Coord>7000) Prec_Coord=7000;
+
+        //Get Coord inverse monentum
+            Da4->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+            grCoord->Fit(Da4, "Q", "", 0, icell);
+            gStyle->SetOptFit(0000);
+            inverse_Coord = Da4->GetParameter(0);
+            inverse_Coord_error = Da4->GetParError(0);
+            error_Coord_in = Da4->GetParameter(1);
+            inverse_Coord = inverse_Coord < 0 ? -inverse_Coord : inverse_Coord;
+            error_Coord_in = error_Coord_in < 0 ? -error_Coord_in : error_Coord_in;
+            if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
+
+            // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
+            nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
+            // nt->Fill(ini_mom, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, -999.0, -999.0, -999.0, -999.0, icell, itype, t->ID(), max_angle_diff, slope);
+        }
+    }
+    delete grCoord;
+}
+
+void FnuMomCoord::CalcMomentum(EdbTrackP *t, int file_type){
+    int plate_num = SetTrackArray(t, file_type);
+    // printf("plate_num = %d\tnpl = %d\n", plate_num, t->Npl());
+    CalcPosDiff(t, plate_num);
+    // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
+    // DrawMomGraphCoord(t, c1, file_name);
+    CalcMomCoord(t);
+}
+
 // void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
-void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int plate_num){
+// void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int plate_num){
+void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name){
     TGraphErrors *grCoord = new TGraphErrors();
     TGraph *grX = new TGraph();
     TGraph *grY = new TGraph();
@@ -415,7 +498,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
         rmserror_Coord = rms_Coord / sqrt(allentryArray[i]);
         if(cal_s=="Origin_log_modify") {
             // rmserror_Coord = rms_Coord / sqrt(nentryArray[i]);
-            rmserror_Coord = rms_Coord / sqrt((plate_num-1.0) / (1.0*(i+1.0)));
+            rmserror_Coord = rms_Coord / sqrt((t->Npl()-1.0) / (1.0*(i+1.0)));
             // if(type=="AB") {
             //     rmserror_Coord = rms_Coord / sqrt((nseg-1.0) / (2.0*(i+1.0)));
             // }
@@ -433,7 +516,8 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     TF1 *Da3 = new TF1("Da3", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
-        if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
+        // if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
+        if(icell==32){
             itype = 0;
 
         //Get Coord momentum
@@ -458,7 +542,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
             if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
 
             // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
-            nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
+            // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
             // nt->Fill(ini_mom, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, -999.0, -999.0, -999.0, -999.0, icell, itype, t->ID(), max_angle_diff, slope);
         }
     }
@@ -477,10 +561,12 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     diff->SetMarkerStyle(7);
     diff->Draw("ap");
 
-    c1->cd(3)->DrawFrame(45, min_disp - 5.0, 145, max_disp + 5.0, Form("#delta,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
+    c1->cd(3)->DrawFrame(45, min_disp - 5.0, 145, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
     grdispX->SetMarkerColor(kRed);
+    grdispX->SetMarkerStyle(7);
     grdispY->SetMarkerColor(kBlue);
-    grdisp->GetYaxis()->SetTitleOffset(1.6);
+    grdispY->SetMarkerStyle(7);
+    grdisp->GetYaxis()->SetTitleOffset(1.5);
     grdisp->Add(grdispX, "p");
     grdisp->Add(grdispY, "p");
     grdisp->Draw("");
@@ -515,7 +601,7 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     tx.DrawTextNDC(0.1,0.7,Form("slope = %.4f", slope));
     tx.DrawTextNDC(0.1,0.6,Form("1/Prec(Coord) = %.6f", inverse_Coord));
     tx.DrawTextNDC(0.1,0.5,Form("Cell length max = %d", icell_cut));
-    tx.DrawTextNDC(0.1,0.4,Form("npl = %d  nseg = %d", plate_num, t->N()));
+    tx.DrawTextNDC(0.1,0.4,Form("npl = %d  nseg = %d", t->Npl(), t->N()));
     tx.DrawTextNDC(0.1,0.3,Form("tan x = %.4f  tan y = %.4f", tanx, tany));
     tx.DrawTextNDC(0.1,0.2,Form("ini_mom = %.1f", ini_mom));
     tx.DrawTextNDC(0.1,0.1,Form("ini_smearing = %.1f", smearing));
@@ -531,15 +617,6 @@ void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_
     delete grdisp;
     delete grCoord;
     delete diff;
-}
-
-// void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
-void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int file_type){
-    int plate_num = SetTrackArray(t, file_type);
-    // printf("plate_num = %d\tnpl = %d\n", plate_num, t->Npl());
-    CalcDataPosDiff(t, plate_num);
-    // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
-    DrawDataMomGraphCoord(t, c1, file_name, plate_num);
 }
 
 void FnuMomCoord::WriteRootFile(TString file_name){

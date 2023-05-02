@@ -93,7 +93,8 @@ int main(){
     for(int i = 0; i < v_TrackP.size(); i++){
     // for(int i = 0; i < 2; i++){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
-        mc.CalcDataMomCoord(v_TrackP[i], c1, file_name, 0);
+        mc.CalcMomentum(v_TrackP[i], 0);
+        mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
     }
 
     c1->Print(file_name + ".pdf]");
