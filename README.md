@@ -2,11 +2,12 @@
 ## public member function
 
 `FnuMomCoord()`　コンストラクタ：Data用のパラメータが代入<br>
-`SetDataPara()`　Data用のパラメータが代入<br>
-`SetMCPara()`　 MC Sample 用のパラメータが代入<br>
-`CalcDataMomCoord(EdbTrack *t, TCanvas *c1, TString  file_name, int file_patameter)`<br>　
-位置法で運動量を測定し、引数の名前の pdf fileに以下のグラフを描画<br>
-`WriteRootFile(TString file_name)`　.root fileを引数の名前で出力<br>
+`ReadParFile(TString file_name)`　/par内のパラメータファイルを読み込む<br>
+`CalcMomentum(EdbTrackP *t, int file_patameter = 0)`<br>　
+運動量を測定。第2引数は、0：Data用（デフォルト）、1：MC用<br>
+`DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name)`<br>
+測定した運動量のグラフを描画、第3引数名の.pdf にプリント<br>
+`WriteRootFile(TString file_name)`　第２引数名の.root を出力<br>
 
 # About for_edaevent.C(TCut cut_parameter)
 1 `root -l 'for_edaevent.C("cut_parameter")'`を実行<br><br>
