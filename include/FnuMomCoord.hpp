@@ -42,10 +42,11 @@ class FnuMomCoord {
     public:
         FnuMomCoord();
         ~FnuMomCoord();
-        void ShowPara();
+        void ShowPar();
         void ShowZ();
-        void SetDataPara();
-        void SetMCPara(double first_mom, double first_smear);
+        void SetDataPar();
+        void SetMCPar(double first_mom, double first_smear);
+        void ReadParFile(TString file_name);
         std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index);
         double CalcTrackAngleDiff(EdbTrackP* t, int index);
         double CalcTrackAngleDiffMax(EdbTrackP* t);

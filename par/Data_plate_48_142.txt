@@ -1,0 +1,9 @@
+nseg:                                    95
+icellMax:                               32
+ini_mom:                                 50
+smearing:                                0.4
+X0:                                      4.571
+zW:                                      1.1
+z:                                       1450
+type:                                    AB
+cal_s:                                   Origin_log_modify

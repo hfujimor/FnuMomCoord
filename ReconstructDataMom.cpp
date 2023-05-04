@@ -88,8 +88,8 @@ int main(){
     DataSetTrackVector(pvr);
 
     FnuMomCoord mc;
-    mc.SetDataPara();
-    mc.ShowPara();
+    mc.ReadParFile("par/Data_plate_48_142.txt");
+    mc.ShowPar();
     for(int i = 0; i < v_TrackP.size(); i++){
     // for(int i = 0; i < 2; i++){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);

@@ -62,7 +62,7 @@ FnuMomCoord::~FnuMomCoord(){
     std::cout << "success" << std::endl;
 }
 
-void FnuMomCoord::ShowPara(){
+void FnuMomCoord::ShowPar(){
     printf("nseg = %d\n", nseg);
     printf("icellMax = %d\n", icellMax);
     printf("ini_mom = %.1f\n", ini_mom);
@@ -82,7 +82,7 @@ void FnuMomCoord::ShowZ(){
     
 }
 
-void FnuMomCoord::SetDataPara(){
+void FnuMomCoord::SetDataPar(){
     nseg = 95;
     icellMax = 32; 
     ini_mom = 50.0;
@@ -96,7 +96,7 @@ void FnuMomCoord::SetDataPara(){
     std::cout << "For the Data parameter" << std::endl;
 }
 
-void FnuMomCoord::SetMCPara(double first_mom, double first_smear){
+void FnuMomCoord::SetMCPar(double first_mom, double first_smear){
     nseg = 100;
     icellMax = 40;
     ini_mom = first_mom;
@@ -108,6 +108,21 @@ void FnuMomCoord::SetMCPara(double first_mom, double first_smear){
     cal_s = "Origin_log_modify";
     
     std::cout << "For the Mot MC sample parameter" << std::endl;
+}
+
+void FnuMomCoord::ReadParFile(TString file_name){
+    TEnv env;
+    env.ReadFile(file_name, kEnvAll);
+    std::cout << file_name << " Open!!" << std::endl;
+
+    nseg = env.GetValue("nseg", 1);
+    icellMax = env.GetValue("icellMax", 1);
+    ini_mom = env.GetValue("ini_mom", 1.);
+    smearing = env.GetValue("smearing", 1.);
+    X0 = env.GetValue("X0", 1.);
+    zW = env.GetValue("zW", 1.);
+    z = env.GetValue("z", 1.);
+
 }
 
 std::pair<double, double> FnuMomCoord::CalcTrackAngle(EdbTrackP* t, int index) {
@@ -124,10 +139,11 @@ std::pair<double, double> FnuMomCoord::CalcTrackAngle(EdbTrackP* t, int index) {
 	grx.Fit("pol1", "Q");
 	gry.Fit("pol1", "Q");
 
-	double tx = grx.GetFunction("pol1") -> GetParameter(1);
-	double ty = gry.GetFunction("pol1") -> GetParameter(1);
+	std::pair<double, double> txy;
+    txy.first = grx.GetFunction("pol1") -> GetParameter(1);
+	txy.second = gry.GetFunction("pol1") -> GetParameter(1);
 
-	return {tx, ty};
+    return txy;
 }
 
 double FnuMomCoord::CalcTrackAngleDiff(EdbTrackP* t, int index){
@@ -451,6 +467,9 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
 
 	grX->Fit("pol1", "Q");
 	grY->Fit("pol1", "Q");
+
+    grX->GetFunction("pol1")->SetLineWidth(0.9);
+    grY->GetFunction("pol1")->SetLineWidth(0.9);
 
 	double intercept_x = grX->GetFunction("pol1")->GetParameter(0);
 	double intercept_y = grY->GetFunction("pol1")->GetParameter(0);
