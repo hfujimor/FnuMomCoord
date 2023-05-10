@@ -2,7 +2,7 @@
 **飛跡の運動量を測定するクラス**<br>
 - Class FnuMomCoord を使用すると、任意の飛跡の運動量が位置法で測定される。<br>
 - 実行後、1つの飛跡に対してどのように測られたかを pdf またはキャンバスで確認できる。<br>
-- `#include "FnuMomCoord.hpp"`　でソースファイルをインクルードして使用<br>
+- `#include "FnuMomCoord.hpp"`　をインクルードして使用<br>
 ※現状、クラスはコンパイルして実行する必要がある。インタープリタにはまだ対応していないので、for_edaevent.cppを用いること<br>
 
 
@@ -12,8 +12,7 @@
 - `CalcMomentum(EdbTrackP *t, int file_patameter = 0)`　運動量を測定。第2引数は、0：Data用（デフォルト）、1：MC用
 - `DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name)`<br>
 測定した運動量のグラフを描画、第3引数名の.pdf にプリント<br>
-- `WriteRootFile(TString file_name)`<br>
-第2引数名の root file を出力<br>
+- `WriteRootFile(TString file_name)`　第2引数名の root file を出力<br>
 
 ## Simple example
 ```
@@ -59,6 +58,7 @@ int main(){
 
 
 # About for_edaevent.C(TCut cut_parameter)
+## How to use
 1. `root -l 'for_edaevent.C("cut_parameter")'`を実行<br><br>
 2. GUIが起動<br>
 <img width="500" src=figure/gui.png><br><br>
@@ -70,8 +70,14 @@ int main(){
 グラフは、(1, 1)Z-X, (2, 1)Z-Y, (2, 2)RMSとFit関数, (1, 3)tanx, (2, 3)parameter<br>
 **※左上から2, 3番目のグラフはクラスで出力されるものと異なっている事に注意（修正中。測定結果は同じ）**<br>
 
-####実行例
+## Example
 ```
+root -l 'for_edaevent.C("cut_parameter")'
+```
+```
+root [0] 
+Processing for_edaevent.C...
+// ReadTracksTree conducted
 root [1] CalcMomentum()
 reconstruct to possible cell length max
 Warning in <TCanvas::Constructor>: Deleting canvas with same name: c1
