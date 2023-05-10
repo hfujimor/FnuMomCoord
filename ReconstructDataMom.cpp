@@ -36,7 +36,7 @@
 
 #include "FnuMomCoord.hpp"
 
-int nseg_cut = 87;
+int nseg_cut = 70;
 // int nseg_cut = 180;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
@@ -85,15 +85,16 @@ int main(){
     EdbDataProc *dproc = new EdbDataProc;
     EdbPVRec *pvr = new EdbPVRec;
     dproc->ReadTracksTree(*pvr, Form("%s", data_set), Form("nseg>=%d", nseg_cut));
+    // dproc->ReadTracksTree(*pvr, Form("%s", data_set), "nseg>=50&&nseg<=60");
     DataSetTrackVector(pvr);
 
     FnuMomCoord mc;
     mc.ReadParFile("par/Data_plate_48_142.txt");
     mc.ShowPar();
     for(int i = 0; i < v_TrackP.size(); i++){
-    // for(int i = 0; i < 2; i++){
+    // for(int i = 0; i < 100; i++){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
-        mc.CalcMomentum(v_TrackP[i], 0);
+        float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
         mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
     }
 

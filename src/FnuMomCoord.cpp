@@ -356,7 +356,7 @@ void FnuMomCoord::CalcPosDiff(EdbTrackP *t, int plate_num){
 }
 
 // void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
-void FnuMomCoord::CalcMomCoord(EdbTrackP *t){
+float FnuMomCoord::CalcMomCoord(EdbTrackP *t){
     TGraphErrors *grCoord = new TGraphErrors();
     float rms_RCM, rms_Coord;
     float rmserror_RCM, rmserror_Coord;
@@ -425,15 +425,18 @@ void FnuMomCoord::CalcMomCoord(EdbTrackP *t){
         }
     }
     delete grCoord;
+
+    return 1.0/inverse_Coord;
 }
 
-void FnuMomCoord::CalcMomentum(EdbTrackP *t, int file_type){
+float FnuMomCoord::CalcMomentum(EdbTrackP *t, int file_type){
     int plate_num = SetTrackArray(t, file_type);
     // printf("plate_num = %d\tnpl = %d\n", plate_num, t->Npl());
     CalcPosDiff(t, plate_num);
     // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
     // DrawMomGraphCoord(t, c1, file_name);
-    CalcMomCoord(t);
+    float Pmeas = CalcMomCoord(t);
+    return Pmeas;
 }
 
 // void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
@@ -536,7 +539,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     TF1 *Da3 = new TF1("Da3", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
         // if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
-        if(icell==32){
+        if(icell==16||icell==32){
             itype = 0;
 
         //Get Coord momentum
