@@ -32,7 +32,6 @@ char *type = "AB";
 char *cal_s = "Origin_log_modify"; // modify log, radiation length and typeAB error
 
 std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index) {
-
 	TGraph grx;
 	TGraph gry;
 
@@ -46,10 +45,11 @@ std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index) {
 	grx.Fit("pol1", "Q");
 	gry.Fit("pol1", "Q");
 
-	double tx = grx.GetFunction("pol1") -> GetParameter(1);
-	double ty = gry.GetFunction("pol1") -> GetParameter(1);
+	std::pair<double, double> txy;
+    txy.first = grx.GetFunction("pol1") -> GetParameter(1);
+	txy.second = gry.GetFunction("pol1") -> GetParameter(1);
 
-	return {tx, ty};
+    return txy;
 }
 
 double CalcTrackAngleDiff(EdbTrackP* t, int index){
@@ -710,14 +710,14 @@ float SelectedMakeMomGraphCoord(EdbTrackP *t, int plate_num){
         grTY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TY());
     }
 
-	// double max_angle_diff = -1;
-    // for(int i = 3; i < t->N()-2; i++){
-    //     double angle_diff = CalcTrackAngleDiff(t, i);
-    //     if (angle_diff > max_angle_diff) max_angle_diff = angle_diff;
-    //     EdbSegP *s = t->GetSegment(i);
-    //     diff->SetPoint(diff->GetN(), s->Plate(), angle_diff);
-    //     // printf("i = %d, diff theta = %f\n", s->Plate(), angle_diff);
-    // }
+	double max_angle_diff = -1;
+    for(int i = 3; i < t->N()-2; i++){
+        double angle_diff = CalcTrackAngleDiff(t, i);
+        if (angle_diff > max_angle_diff) max_angle_diff = angle_diff;
+        EdbSegP *s = t->GetSegment(i);
+        diff->SetPoint(diff->GetN(), s->Plate(), angle_diff);
+        // printf("i = %d, diff theta = %f\n", s->Plate(), angle_diff);
+    }
 
     for(int i = 0; i < icell_cut; i++){
         itype = 0;

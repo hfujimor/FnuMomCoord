@@ -1,6 +1,7 @@
 
 # TARGET=Practice
 TARGET=ReconstructDataMom
+# TARGET=EstimateAnglePeak
 
 # FEDRALIBS := -lEIO -lEdb -lEbase -lEdr -lScan -lAlignment -lEmath -lEphys -lvt -lDataConversion
 FEDRALIBS := -lEIO -lEdb -lEbase -lEdr -lScan -lAlignment -lEmath -lEphys -lvt -lDataConversion -lEDA -lShower -lScan -lMLP -lSpectrum
