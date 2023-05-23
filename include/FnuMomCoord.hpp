@@ -31,6 +31,7 @@
 #include <TCut.h>
 #include <TStyle.h>
 #include<TMultiGraph.h>
+#include<TVector3.h>
 
 #include <EdbDataSet.h>
 #include <EdbEDAUtil.h>
@@ -50,11 +51,13 @@ class FnuMomCoord {
         std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index);
         double CalcTrackAngleDiff(EdbTrackP* t, int index);
         double CalcTrackAngleDiffMax(EdbTrackP* t);
+        double CalcDistance(TVector3 a, TVector3 b, TVector3 p);
         // void VertexSetTrackVector(EdbPVRec *pvr);
         // void DataSetTrackVector(EdbPVRec *pvr);
         void SetZArray(char* fname);
         int SetTrackArray(EdbTrackP *t, int file_type);
         void CalcPosDiff(EdbTrackP *t, int plate_num);
+        void CalcLatPosDiff(EdbTrackP *t, int plate_num);
         float CalcMomCoord(EdbTrackP *t);
         // void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
         float CalcMomentum(EdbTrackP *t, int file_type = 0);
@@ -81,11 +84,13 @@ class FnuMomCoord {
         char *cal_s; // modify log, radiation length and typeAB error
         // std::vector<EdbTrackP*> v_TrackP;  //keep EdbTrackP
         double cal_CoordArray[40]; // Coordでs_rmsをtrack,cell lengthに入れてる
+        double cal_LateralArray[40];
         double zArray[300];
         double track_array[300][3];
         double delta_array[600];
         int allentryArray[40]; // keep allentry
         int nentryArray[40];
+        int LateralEntryArray[40];
         TNtuple *nt;
 };
 

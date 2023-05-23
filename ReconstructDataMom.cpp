@@ -93,6 +93,7 @@ int main(){
     mc.ShowPar();
     for(int i = 0; i < v_TrackP.size(); i++){
     // for(int i = 0; i < 100; i++){
+    // for(int i = 100; i < 200; i++){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
         float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
         mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
