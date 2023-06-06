@@ -387,7 +387,7 @@ void CalcMomentum(int nc = 0){
 
 // void for_edaevant(TString file_name, TString cut_parameter){
 // void for_edaevent(){
-void for_edaevent(TCut cut_parameter = "nseg>=87"){
+void old_for_edaevent(TCut cut_parameter = "nseg>=87"){
     // eda = new EdbEDA(file_name, 100, cut_parameter);
     // eda = new EdbEDA("../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root", 100, "nseg>=87");
     eda = new EdbEDA("../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root", 100, cut_parameter);

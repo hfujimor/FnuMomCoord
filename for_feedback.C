@@ -1,7 +1,7 @@
 EdbEDA *eda;
 
-static const int nseg = 95;  //number of segments
-static const int icellMax = 32;  //maximum of cell length
+int nseg = 95;  //number of segments
+int icellMax = 32;  //maximum of cell length
 int icell_cut;
 double ini_mom = 50.0;
 double smearing = 0.4;  //smearing (micron)
@@ -19,6 +19,21 @@ int nentryArray[40];
 int LateralEntryArray[40];
 char *type = "AB";
 char *cal_s = "Origin_log_modify"; // modify log, radiation length and typeAB error
+
+void ReadParFile(TString file_name){
+    TEnv env;
+    env.ReadFile(file_name, kEnvAll);
+    std::cout << file_name << " Open!!" << std::endl;
+
+    nseg = env.GetValue("nseg", 1);
+    icellMax = env.GetValue("icellMax", 1);
+    ini_mom = env.GetValue("ini_mom", 1.);
+    smearing = env.GetValue("smearing", 1.);
+    X0 = env.GetValue("X0", 1.);
+    zW = env.GetValue("zW", 1.);
+    z = env.GetValue("z", 1.);
+
+}
 
 std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index) {
 	TGraph grx;
@@ -265,9 +280,9 @@ void CalcLatPosDiff(EdbTrackP *t, int plate_num, int cell_length){
             if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
                 continue;
 
-            TVector3 a(track_array[i0][0], track_array[i0][1], track_array[i0][2]);
-            TVector3 b(track_array[i1][0], track_array[i1][1], track_array[i1][2]);
-            TVector3 p(track_array[i2][0], track_array[i2][1], track_array[i2][2]);
+            TVector3 a(track_array[i0][0], track_array[i0][1], 0.0);
+            TVector3 b(track_array[i1][0], track_array[i1][1], 0.0);
+            TVector3 p(track_array[i2][0], track_array[i2][1], 0.0);
             
             lateralArray[i] = CalcDistance(a, b, p);
             // cout << lateralArray[i] << endl;
@@ -453,37 +468,42 @@ void DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name){
         grY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->Y());
     }
 
-	// grX->Fit("pol1", "Q");
-	// grY->Fit("pol1", "Q");
+	grX->Fit("pol1", "Q");
+	grY->Fit("pol1", "Q");
 
-    // grX->GetFunction("pol1")->SetLineWidth(0.9);
-    // grY->GetFunction("pol1")->SetLineWidth(0.9);
+    grX->GetFunction("pol1")->SetLineWidth(0.9);
+    grY->GetFunction("pol1")->SetLineWidth(0.9);
 
-	// double intercept_x = grX->GetFunction("pol1")->GetParameter(0);
-	// double intercept_y = grY->GetFunction("pol1")->GetParameter(0);
+	double intercept_x = grX->GetFunction("pol1")->GetParameter(0);
+	double intercept_y = grY->GetFunction("pol1")->GetParameter(0);
 
-	// double slope_x = grX->GetFunction("pol1")->GetParameter(1);
-	// double slope_y = grY->GetFunction("pol1")->GetParameter(1);
+	double slope_x = grX->GetFunction("pol1")->GetParameter(1);
+	double slope_y = grY->GetFunction("pol1")->GetParameter(1);
 
-    // double max_disp = 0;
-    // double min_disp = 0;
-    // for(int i = 0; i < t->N(); i++){
-    //     ith = grdispX->GetN();
-    //     int plate_current = t->GetSegment(i)->Plate();
-    //     double disp_x = t->GetSegment(i)->X() - (slope_x*plate_current + intercept_x);
-    //     double disp_y = t->GetSegment(i)->Y() - (slope_y*plate_current + intercept_y);
-    //     max_disp = std::max(max_disp, std::max(disp_x, disp_y));
-    //     min_disp = std::min(min_disp, std::min(disp_x, disp_y));
+    double max_disp = 0;
+    double min_disp = 0;
+    for(int i = 0; i < t->N(); i++){
+        ith = grdispX->GetN();
+        int plate_current = t->GetSegment(i)->Plate();
+        double disp_x = t->GetSegment(i)->X() - (slope_x*plate_current + intercept_x);
+        double disp_y = t->GetSegment(i)->Y() - (slope_y*plate_current + intercept_y);
+        // max_disp = std::max(max_disp, std::max(disp_x, disp_y));
+        // min_disp = std::min(min_disp, std::min(disp_x, disp_y));
+        double large_disp = disp_x >= disp_y ? disp_x : disp_y;
+        double small_disp = disp_x <= disp_y ? disp_x : disp_y;
+        max_disp = max_disp >= large_disp ? max_disp : large_disp;
+        min_disp = min_disp <= small_disp ? min_disp : small_disp;
 
-    //     grdispX->SetPoint(ith, t->GetSegment(i)->Plate(), disp_x);
-    //     grdispY->SetPoint(ith, t->GetSegment(i)->Plate(), disp_y);
-    // }
 
-    // for(int i = 0; i < t->N(); i++){
-    //     ith = grTX->GetN();
-    //     grTX->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TX());
-    //     grTY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TY());
-    // }
+        grdispX->SetPoint(ith, t->GetSegment(i)->Plate(), disp_x);
+        grdispY->SetPoint(ith, t->GetSegment(i)->Plate(), disp_y);
+    }
+
+    for(int i = 0; i < t->N(); i++){
+        ith = grTX->GetN();
+        grTX->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TX());
+        grTY->SetPoint(ith, t->GetSegment(i)->Plate(), t->GetSegment(i)->TY());
+    }
 
 	double max_angle_diff = -1;
     for(int i = 3; i < t->N()-2; i++){
@@ -547,8 +567,10 @@ void DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name){
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
-    TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
-    TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
         if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
         // if(icell==16||icell==32){
@@ -616,7 +638,7 @@ void DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name){
     diff->SetMarkerStyle(7);
     diff->Draw("ap");
 
-    // c1->cd(3)->DrawFrame(45, min_disp - 5.0, 145, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
+    // c1->cd(2)->DrawFrame(t->GetSegmentFirst()->Plate() - 2, min_disp - 5.0, t->GetSegmentLast()->Plate() + 2, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
     // grdispX->SetMarkerColor(kRed);
     // grdispX->SetMarkerStyle(7);
     // grdispY->SetMarkerColor(kBlue);
@@ -810,8 +832,10 @@ std::pair<double, double> SelectedMomGraphCoord(EdbTrackP *t, int plate_num, int
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
-    TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
-    TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
         if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
         // if(icell==16||icell==32){
@@ -940,7 +964,7 @@ void CalcMomentum(int nc = 0, int file_type = 0){
     std::pair<double, double> P = SelectedMomGraphCoord(t, plate_num, nc);
     double Prec_Coord = P.first;
     double Prec_Lat = P.second;
-    printf("P_Coord = %.1f\tP_Lateral = %.1f\n", Prec_Coord, Prec_Lat);
+    printf("P_Coord = %.1fGeV  P_Lateral = %.1fGeV\n", Prec_Coord, Prec_Lat);
 }
 
 void for_feedback(){
@@ -949,9 +973,13 @@ void for_feedback(){
     TCanvas *c1 = new TCanvas("c1");
     TString file_name = "Reco_feedback";
 
+    ReadParFile("par/Data_up_to_200plates.txt");
+
     c1->Print(file_name + ".pdf[");
 
+// if you maesure other feedback file, plaese alter next char. 
     eda = new EdbEDA("20230321_reco43_ev_97262.5_71899.6_p063.feedback");
+// 
     TObjArray *arr = eda->GetTrackSet("TS")->GetTracksBase();
 
     for(int i=0; i<arr->GetEntriesFast(); i++){

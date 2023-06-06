@@ -31,6 +31,8 @@
 #include <TStyle.h>
 #include<TMultiGraph.h>
 #include<TPaveStats.h>
+#include<TVector2.h>
+#include<TVector3.h>
 
 #include <EdbDataSet.h>
 #include <EdbEDAUtil.h>
@@ -169,6 +171,25 @@ double FnuMomCoord::CalcTrackAngleDiffMax(EdbTrackP* t){
 
 	return max_angle_diff;
 }
+
+// double FnuMomCoord::CalcDistance(TVector2 a, TVector2 b, TVector2 p){
+//     TVector2 ab = b - a;
+//     TVector2 ap = p - a;
+//     return abs(ap.Cross(ab)) / ab.Mod();
+//     // TVector2 ab = b - a;
+// 	// // ab.Print();
+//     // TVector2 ap = p - a;
+//     // // ap.Print();
+//     // TVector2 ab_unit = ab.Unit();
+//     // // ab_unit.Print();
+//     // TVector2 proj = ab_unit * ap.Dot(ab_unit);
+//     // // proj.Print();
+//     // TVector2 dist_vec = ap - proj;
+//     // // dist_vec.Print();
+//     // double dist = sqrt(dist_vec.Dot(dist_vec));
+
+//     // return dist;
+// }
 
 double FnuMomCoord::CalcDistance(TVector3 a, TVector3 b, TVector3 p){
     TVector3 ab = b - a;
@@ -390,9 +411,9 @@ void FnuMomCoord::CalcLatPosDiff(EdbTrackP *t, int plate_num){
             if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
                 continue;
 
-            TVector3 a(track_array[i0][0], track_array[i0][1], track_array[i0][2]);
-            TVector3 b(track_array[i1][0], track_array[i1][1], track_array[i1][2]);
-            TVector3 p(track_array[i2][0], track_array[i2][1], track_array[i2][2]);
+            TVector3 a(track_array[i0][0], track_array[i0][1], 0.0);
+            TVector3 b(track_array[i1][0], track_array[i1][1], 0.0);
+            TVector3 p(track_array[i2][0], track_array[i2][1], 0.0);
             
             lateralArray[i] = CalcDistance(a, b, p);
             // cout << lateralArray[i] << endl;
@@ -405,8 +426,42 @@ void FnuMomCoord::CalcLatPosDiff(EdbTrackP *t, int plate_num){
     }
 }
 
+// void FnuMomCoord::CalcLatPosDiff(EdbTrackP *t, int plate_num){
+//     double lateralArray[200];
+//     icell_cut = (plate_num - 1)/2 <= icellMax ? (plate_num - 1)/2 : icellMax;
+//     for(int icell = 1; icell < icell_cut+1; icell++){
+//         double var = 0;
+//         int LateralEntry = 0;
+//         for(int i = 0; i < plate_num - icell * 2; i++){
+//             int i0 = i;
+//             int i1 = i+icell*1;
+//             int i2 = i+icell*2;
+//             if(i2 >= plate_num) continue;
+
+//             double x0 = track_array[i0][0];
+//             double x1 = track_array[i1][0];
+//             double x2 = track_array[i2][0];
+
+//             if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+//                 continue;
+
+//             TVector3 a(track_array[i0][0], track_array[i0][1], track_array[i0][2]);
+//             TVector3 b(track_array[i1][0], track_array[i1][1], track_array[i1][2]);
+//             TVector3 p(track_array[i2][0], track_array[i2][1], track_array[i2][2]);
+            
+//             lateralArray[i] = CalcDistance(a, b, p);
+//             // cout << lateralArray[i] << endl;
+//             var += lateralArray[i]*lateralArray[i];
+//             LateralEntry++;
+
+//         }
+//         cal_LateralArray[icell-1] = var/LateralEntry;
+//         LateralEntryArray[icell-1] = LateralEntry;
+//     }
+// }
+
 // void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
-float FnuMomCoord::CalcMomCoord(EdbTrackP *t){
+float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
     TGraphErrors *grCoord = new TGraphErrors();
     TGraphErrors *grLat = new TGraphErrors();
     float rms_RCM, rms_Coord, rms_Lat;
@@ -475,8 +530,10 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t){
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
-    TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
-    TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
         if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
             itype = 0;
@@ -523,11 +580,15 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t){
             error_Lat_in = error_Lat_in < 0 ? -error_Lat_in : error_Lat_in;
             if(inverse_Lat<0.00014286) inverse_Lat = 0.00014286;
 
-
-            // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
-            // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
-            nt->Fill(ini_mom, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, Prec_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
-            // nt->Fill(ini_mom, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, -999.0, -999.0, -999.0, -999.0, icell, itype, t->ID(), max_angle_diff, slope);
+            if(file_type==0){
+                // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
+                // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
+                nt->Fill(ini_mom, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, Prec_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+                // nt->Fill(ini_mom, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, -999.0, -999.0, -999.0, -999.0, icell, itype, t->ID(), max_angle_diff, slope);
+            }
+            else if(file_type==1){
+                nt->Fill(t->P(), Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, Prec_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+            }
         }
     }
     delete grCoord;
@@ -543,7 +604,7 @@ float FnuMomCoord::CalcMomentum(EdbTrackP *t, int file_type){
     CalcLatPosDiff(t, plate_num);
     // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
     // DrawMomGraphCoord(t, c1, file_name);
-    float Pmeas = CalcMomCoord(t);
+    float Pmeas = CalcMomCoord(t, file_type);
     return Pmeas;
 }
 
@@ -672,8 +733,10 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
-    TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
-    TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
         // if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
         if(icell==16||icell==32){

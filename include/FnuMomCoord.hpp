@@ -31,6 +31,7 @@
 #include <TCut.h>
 #include <TStyle.h>
 #include<TMultiGraph.h>
+#include<TVector2.h>
 #include<TVector3.h>
 
 #include <EdbDataSet.h>
@@ -51,6 +52,7 @@ class FnuMomCoord {
         std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index);
         double CalcTrackAngleDiff(EdbTrackP* t, int index);
         double CalcTrackAngleDiffMax(EdbTrackP* t);
+        // double CalcDistance(TVector2 a, TVector2 b, TVector2 p);
         double CalcDistance(TVector3 a, TVector3 b, TVector3 p);
         // void VertexSetTrackVector(EdbPVRec *pvr);
         // void DataSetTrackVector(EdbPVRec *pvr);
@@ -58,7 +60,7 @@ class FnuMomCoord {
         int SetTrackArray(EdbTrackP *t, int file_type);
         void CalcPosDiff(EdbTrackP *t, int plate_num);
         void CalcLatPosDiff(EdbTrackP *t, int plate_num);
-        float CalcMomCoord(EdbTrackP *t);
+        float CalcMomCoord(EdbTrackP *t, int file_type);
         // void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
         float CalcMomentum(EdbTrackP *t, int file_type = 0);
         void DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name);
