@@ -3,13 +3,16 @@
 - Class FnuMomCoord を使用すると、任意の飛跡の運動量が位置法で測定される。<br>
 - 実行後、1つの飛跡に対してどのように測られたかを pdf またはキャンバスで確認できる。<br>
 - `#include "FnuMomCoord.hpp"`　をインクルードして使用<br>
-※現状、クラスはコンパイルして実行する必要がある。インタープリタにはまだ対応していないので、for_edaevent.cppを用いること<br>
+※現状、クラスはコンパイルして実行する必要がある。インタープリタにはまだ対応していない。<br>
+feedback fileには、for_feedback.C<br>
+linked_tracksには、for_edaevent.Cを用いるのが良い<br>
+現在は、最大200層まで運動量が測定出来るようになっている<br>
 
 
 ## Public member function
 - `FnuMomCoord()`　コンストラクタ：Data用のパラメータが代入
 - `ReadParFile(TString file_name)`　/par内のパラメータファイルを読み込む
-- `CalcMomentum(EdbTrackP *t, int file_patameter = 0)`　運動量を測定。第2引数は、0：Data用（デフォルト）、1：MC用
+- `CalcMomentum(EdbTrackP *t, int file_type = 0)`　運動量を測定。第2引数は、0：Data用（デフォルト）、1：MC用
 - `DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name)`<br>
 測定した運動量のグラフを描画、第3引数名の.pdf にプリント<br>
 - `WriteRootFile(TString file_name)`　第2引数名の root file を出力<br>
@@ -64,10 +67,10 @@ int main(){
 <img width="500" src=figure/gui.png><br><br>
 3. 測定したい飛跡を選択<br>
 <img width="500" src=figure/select_track.png><br><br>
-4. `CalcMomentum(int nc)`を実行（cell lengthを引数で指定可）<br>
+4. `CalcMomentum(int nc, int file_type)`を実行（cell lengthを引数で指定可）<br>
 以下のグラフが描画＋測定結果を出力<br>
-<img width="500" src=figure/RecoMom.png><br><br>
-グラフは、(1, 1)Z-X, (2, 1)Z-Y, (2, 2)RMSとFit関数, (1, 3)tanx, (2, 3)parameter<br>
+<img width="500" src=figure/RecoMom3.png><br><br>
+グラフは、(1, 1) X-plate number, (2, 1) Y-plate number, (1, 2) Angle displacement-plate number, (1, 3) parameters, (2, 2) 位置法での運動量測定, (2, 3) 位置法（ラテラル軸）での運動量測定<br>
 **※左上から2, 3番目のグラフはクラスで出力されるものと異なっている事に注意（修正中。測定結果は同じ）**<br>
 
 ## Example
