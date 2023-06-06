@@ -70,8 +70,13 @@ int main(){
 4. `CalcMomentum(int nc, int file_type)`を実行（cell lengthを引数で指定可）<br>
 以下のグラフが描画＋測定結果を出力<br>
 <img width="500" src=figure/RecoMom3.png><br><br>
-グラフは、(1, 1) X-plate number, (2, 1) Y-plate number, (1, 2) Angle displacement-plate number, (1, 3) parameters, (2, 2) 位置法での運動量測定, (2, 3) 位置法（ラテラル軸）での運動量測定<br>
-**※左上から2, 3番目のグラフはクラスで出力されるものと異なっている事に注意（修正中。測定結果は同じ）**<br>
+グラフは、<br>
+(1, 1) X-plate number<br>
+(2, 1) Y-plate number<br>
+(1, 2) Angle displacement-plate number<br>
+(1, 3) parameters<br>
+(2, 2) 位置法での運動量測定<br>
+(2, 3) 位置法（ラテラル軸）での運動量測定<br>
 
 ## Example
 ```
