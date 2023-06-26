@@ -36,16 +36,17 @@
 
 #include "FnuMomCoord.hpp"
 
-int nseg_cut = 70;
+int nseg_cut = 90;
 // int nseg_cut = 180;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
 int data_area_y_min = 65000;
 int data_area_y_max = 70100;
 double angle_diff_cut = 1.0;
-char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root";
+// char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root";
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks_reconnected.root";
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks_reconnected_narrow.root";
+char *data_set = "../../Measurement/FASER/F222/data/vert32063_pl053-167_NewTFD_alignTFD2/reco32_065000_050000/v15/akirec/linked_tracks.root";
 
 std::vector<EdbTrackP*> v_TrackP;
 
@@ -89,7 +90,7 @@ int main(){
     DataSetTrackVector(pvr);
 
     FnuMomCoord mc;
-    mc.ReadParFile("par/Data_plate_48_142.txt");
+    mc.ReadParFile("par/Data_up_to_200plates.txt");
     mc.ShowPar();
     for(int i = 0; i < v_TrackP.size(); i++){
     // for(int i = 0; i < 100; i++){
