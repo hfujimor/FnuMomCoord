@@ -99,9 +99,9 @@ int main(){
     // TString file_name = "MC_Reco/200GeV_0mrad_0mrad_50seg";
     // TString file_name = "MC_Reco/Random_0mrad_0mrad_100seg";
     // TString file_name = "MC_Reco/Uniform_1GeV_1000GeV_0mrad_0mrad_100seg";
-    // TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
+    TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_90pl_110seg";
-    TString file_name = "MU_MC_Reco/only_mu_7chi2_all_100pl_110seg";
+    // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_100pl_110seg";
     
     c1->Print(file_name + ".pdf[");
 
@@ -115,8 +115,8 @@ int main(){
     FnuMomCoord mc;
     mc.ReadParFile("par/MC_plate_1_110.txt");
     mc.ShowPar();
-    for(int i = 0; i < v_TrackP.size(); i++){
-    // for(int i = 0; i < 100; i++){
+    // for(int i = 0; i < v_TrackP.size(); i++){
+    for(int i = 0; i < 10; i++){
     // for(int i = 100; i < 200; i++){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
         // float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);

@@ -50,7 +50,8 @@ FnuMomCoord::FnuMomCoord(){
     npl = 730;
     icellMax = 32; 
     ini_mom = 50.0;
-    smearing = 0.4;
+    pos_reso = 0.4;
+    smearing = 0.0;
     X0 = 4.571; 
     zW = 1.1; 
     z = 1450.0;
@@ -127,6 +128,7 @@ void FnuMomCoord::ReadParFile(TString file_name){
     npl = env.GetValue("npl", 1);
     icellMax = env.GetValue("icellMax", 1);
     ini_mom = env.GetValue("ini_mom", 1.);
+    pos_reso = env.GetValue("pos_reso", 1.);
     smearing = env.GetValue("smearing", 1.);
     X0 = env.GetValue("X0", 1.);
     zW = env.GetValue("zW", 1.);
@@ -553,7 +555,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             itype = 0;
 
         //Get Coord momentum
-            Da3->SetParameters(ini_mom, sqrt(6)*smearing);
+            Da3->SetParameters(ini_mom, sqrt(6)*pos_reso);
             grCoord->Fit(Da3, "Q", "", 0, icell);
             Prec_Coord = Da3->GetParameter(0);
             error_Coord = Da3->GetParameter(1);
@@ -563,7 +565,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             if(Prec_Coord>7000) Prec_Coord=7000;
 
         //Get Coord inverse monentum
-            Da4->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+            Da4->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
             grCoord->Fit(Da4, "Q", "", 0, icell);
             gStyle->SetOptFit(0000);
             inverse_Coord = Da4->GetParameter(0);
@@ -574,7 +576,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
 
         //Get Lateral momentum
-            Da1->SetParameters(ini_mom, sqrt(6)*smearing);
+            Da1->SetParameters(ini_mom, sqrt(6)*pos_reso);
             grLat->Fit(Da1, "Q", "", 0, icell);
             Prec_Lat = Da1->GetParameter(0);
             error_Lat = Da1->GetParameter(1);
@@ -584,7 +586,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             if(Prec_Lat>7000) Prec_Lat=7000;
 
         //Get Lateral inverse monentum
-            Da2->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+            Da2->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
             grLat->Fit(Da2, "Q", "", 0, icell);
             gStyle->SetOptFit(0000);
             inverse_Lat = Da2->GetParameter(0);
@@ -757,7 +759,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
             itype = 0;
 
         //Get Coord momentum
-            Da3->SetParameters(ini_mom, sqrt(6)*smearing);
+            Da3->SetParameters(ini_mom, sqrt(6)*pos_reso);
             grCoord->Fit(Da3, "Q", "", 0, icell);
             Prec_Coord = Da3->GetParameter(0);
             error_Coord = Da3->GetParameter(1);
@@ -767,7 +769,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
             if(Prec_Coord>7000) Prec_Coord=7000;
 
         //Get Coord inverse monentum
-            Da4->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+            Da4->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
             grCoord->Fit(Da4, "Q", "", 0, icell);
             gStyle->SetOptFit(0000);
             inverse_Coord = Da4->GetParameter(0);
@@ -778,7 +780,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
             if(inverse_Coord<0.00014286) inverse_Coord = 0.00014286;
 
         //Get Lateral momentum
-            Da1->SetParameters(ini_mom, sqrt(6)*smearing);
+            Da1->SetParameters(ini_mom, sqrt(6)*pos_reso);
             grLat->Fit(Da1, "Q", "", 0, icell);
             Prec_Lat = Da1->GetParameter(0);
             error_Lat = Da1->GetParameter(1);
@@ -788,7 +790,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
             if(Prec_Lat>7000) Prec_Lat=7000;
 
         //Get Lateral inverse monentum
-            Da2->SetParameters(1.0/ini_mom, sqrt(6)*smearing);
+            Da2->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
             grLat->Fit(Da2, "Q", "", 0, icell);
             gStyle->SetOptFit(0000);
             inverse_Lat = Da2->GetParameter(0);
@@ -868,7 +870,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     c1->cd(6);
     TText tx2;
     tx2.DrawTextNDC(0.1,0.9,Form("ini_mom = %.1f GeV", ini_mom));
-    tx2.DrawTextNDC(0.1,0.8,Form("ini_smearing = %.1f micron", smearing));
+    tx2.DrawTextNDC(0.1,0.8,Form("ini_pos_reso = %.1f micron", pos_reso));
 
     c1->cd(7)->DrawFrame(t->GetSegmentFirst()->Plate() - 2, min_disp - 5.0, t->GetSegmentLast()->Plate() + 2, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
     grdispX->SetMarkerColor(kRed);

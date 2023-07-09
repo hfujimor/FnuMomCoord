@@ -78,6 +78,7 @@ class FnuMomCoord {
         int icellMax;  //maximum of cell length
         int icell_cut;
         double ini_mom;
+        double pos_reso;
         double smearing;  //smearing (micron)
         // double X0 = 4.677;  //mm in compaund radiation length
         // double zW = 1.0;  //thickness of tungusten plate

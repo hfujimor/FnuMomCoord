@@ -2,6 +2,7 @@ nseg:                                    110
 npl:                                     100
 icellMax:                                32
 ini_mom:                                 100
+pos_reso:                                0.2
 smearing:                                0
 X0:                                      4.677
 zW:                                      1

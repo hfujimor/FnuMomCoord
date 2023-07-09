@@ -14,12 +14,13 @@ void par_sample(){
     // env.SetValue("type", "AB");
     // env.SetValue("cal_s", "Origin_log_modify");
 
-    TString file_name = "MC_plate_1_50.txt";
+    TString file_name = "MC_plate_1_110.txt";
 
-    env.SetValue("nseg", 100);
-    env.SetValue("npl", 50);
+    env.SetValue("nseg", 110);
+    env.SetValue("npl", 100);
     env.SetValue("icellMax", 32);
     env.SetValue("ini_mom", 100.0);
+    env.SetValue("pos_reso", 0.2); 
     env.SetValue("smearing", 0.0);
     env.SetValue("X0", 4.677);
     env.SetValue("zW", 1.0);
