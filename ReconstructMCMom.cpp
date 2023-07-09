@@ -38,6 +38,7 @@
 
 // int nseg_cut = 70;
 int nseg_cut = 180;
+int npl_cut = 100;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
 int data_area_y_min = 65000;
@@ -47,7 +48,7 @@ double angle_diff_cut = 1.0;
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_100GeV_0mrad_0mrad.root";
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_100GeV_0mrad_0mrad_1k.root";
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_300GeV_0mrad_0mrad_1k.root";
-char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_1000GeV_0mrad_0mrad_1k.root";
+// char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_1000GeV_0mrad_0mrad_1k.root";
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_200GeV_0mrad_0mrad.root";
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root";
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks_reconnected.root";
@@ -55,6 +56,8 @@ char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_uniform_energy_0mrad_0mrad.root";
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_100k_uniform_energy_0mrad_0mrad_no_electron.root";
 // char *data_set = "/home/hfujimor/Documents/data/mu_random_linked_tracks.root";
+// char *data_set = "/home/hfujimor/Documents/Tracking/3tracking/linked_tracks_only_mu_7chi2_100seg.root";
+char *data_set = "/home/hfujimor/Documents/Tracking/3tracking/linked_tracks_only_mu_7chi2_110seg.root";
 
 std::vector<EdbTrackP*> v_TrackP;
 
@@ -62,6 +65,8 @@ void DataSetTrackVector(EdbPVRec *pvr){
 
     int all_trk = pvr->Ntracks();
     for(int itrk = 0; itrk < all_trk; itrk++){
+    // for(int itrk = 0; itrk < 1000; itrk++){
+    // for(int itrk = 0; itrk < 10; itrk++){
         EdbTrackP *track = pvr->GetTrack(itrk);
         v_TrackP.push_back(track);
     }
@@ -90,21 +95,25 @@ int main(){
     // TString file_name = "MC_Reco/100GeV_200mrad_100mrad_ver2";
     // TString file_name = "MC_Reco/100GeV_0mrad_0mrad_100seg";
     // TString file_name = "MC_Reco/300GeV_0mrad_0mrad_100seg";
-    TString file_name = "MC_Reco/1000GeV_0mrad_0mrad_100seg";
+    // TString file_name = "MC_Reco/1000GeV_0mrad_0mrad_100seg";
     // TString file_name = "MC_Reco/200GeV_0mrad_0mrad_50seg";
     // TString file_name = "MC_Reco/Random_0mrad_0mrad_100seg";
     // TString file_name = "MC_Reco/Uniform_1GeV_1000GeV_0mrad_0mrad_100seg";
+    // TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
+    // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_90pl_110seg";
+    TString file_name = "MU_MC_Reco/only_mu_7chi2_all_100pl_110seg";
     
     c1->Print(file_name + ".pdf[");
 
     EdbDataProc *dproc = new EdbDataProc;
     EdbPVRec *pvr = new EdbPVRec;
-    dproc->ReadTracksTree(*pvr, Form("%s", data_set), Form("nseg>=%d&&s.eMCTrack==10", nseg_cut));
+    // dproc->ReadTracksTree(*pvr, Form("%s", data_set), Form("nseg>=%d&&s.eMCTrack==10", nseg_cut));
+    dproc->ReadTracksTree(*pvr, Form("%s", data_set), Form("npl>=%d", npl_cut));
     // dproc->ReadTracksTree(*pvr, Form("%s", data_set), "nseg>=50&&nseg<=60");
     DataSetTrackVector(pvr);
 
     FnuMomCoord mc;
-    mc.ReadParFile("par/MC_100GeV_plate_101_200.txt");
+    mc.ReadParFile("par/MC_plate_1_110.txt");
     mc.ShowPar();
     for(int i = 0; i < v_TrackP.size(); i++){
     // for(int i = 0; i < 100; i++){
@@ -112,7 +121,9 @@ int main(){
         // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
         // float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
         float Pmeas = mc.CalcMomentum(v_TrackP[i], 1);
-        mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
+        if(i <= 200) mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
+        if(i % 1000 == 0) printf("i = %d\n", i);
+        // mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
     }
 
     c1->Print(file_name + ".pdf]");

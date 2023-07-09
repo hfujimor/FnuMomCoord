@@ -47,6 +47,7 @@
 
 FnuMomCoord::FnuMomCoord(){
     nseg = 95;
+    npl = 730;
     icellMax = 32; 
     ini_mom = 50.0;
     smearing = 0.4;
@@ -112,12 +113,18 @@ void FnuMomCoord::SetMCPar(double first_mom, double first_smear){
     std::cout << "For the Mot MC sample parameter" << std::endl;
 }
 
+void FnuMomCoord::SetIniMom(double first_mom){
+    ini_mom = first_mom;
+}
+
+
 void FnuMomCoord::ReadParFile(TString file_name){
     TEnv env;
     env.ReadFile(file_name, kEnvAll);
     std::cout << file_name << " Open!!" << std::endl;
 
     nseg = env.GetValue("nseg", 1);
+    npl = env.GetValue("npl", 1);
     icellMax = env.GetValue("icellMax", 1);
     ini_mom = env.GetValue("ini_mom", 1.);
     smearing = env.GetValue("smearing", 1.);
@@ -331,6 +338,8 @@ void FnuMomCoord::CalcPosDiff(EdbTrackP *t, int plate_num){
                 int i2 = i + icell * 2;
                 if (i2 >= plate_num)
                     continue;
+                if (i2 >= npl)
+                    continue;
 
                 double x0 = track_array[i0][0];
                 double x1 = track_array[i1][0];
@@ -358,6 +367,8 @@ void FnuMomCoord::CalcPosDiff(EdbTrackP *t, int plate_num){
                 int i1 = i + icell;
                 int i2 = i + icell * 2;
                 if (i2 >= plate_num)
+                    continue;
+                if (i2 >= npl)
                     continue;
 
                 double x0 = track_array[i0][1];
@@ -403,6 +414,7 @@ void FnuMomCoord::CalcLatPosDiff(EdbTrackP *t, int plate_num){
             int i1 = i+icell*1;
             int i2 = i+icell*2;
             if(i2 >= plate_num) continue;
+            if(i2 >= npl) continue;
 
             double x0 = track_array[i0][0];
             double x1 = track_array[i1][0];
@@ -481,6 +493,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
         itype = 0;
         float j = 1.0;
 
+// こいつは直そう
 // calculate Coord error bar
         if(cal_CoordArray[i] <= 0.0) 
             continue;
@@ -534,6 +547,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
     TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
+    if(file_type == 1) SetIniMom(t->P());
     for(int icell = 1; icell < icell_cut + 1; icell++){
         if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
             itype = 0;
@@ -765,7 +779,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
 
         //Get Lateral momentum
             Da1->SetParameters(ini_mom, sqrt(6)*smearing);
-            grCoord->Fit(Da1, "Q", "", 0, icell);
+            grLat->Fit(Da1, "Q", "", 0, icell);
             Prec_Lat = Da1->GetParameter(0);
             error_Lat = Da1->GetParameter(1);
             Ptrue = ini_mom; // zanteitekina P
@@ -791,7 +805,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     }
 
     c1->Clear();
-    c1->Divide(3,2);
+    c1->Divide(3,3);
     c1->cd(1);
     grX->SetTitle(Form("trid = %d,  nseg = %d", t->ID(), t->N()));
     grX->GetXaxis()->SetTitle("plate number");
@@ -803,25 +817,6 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     diff->SetTitle(Form("#delta#theta,  trid = %d,  nseg = %d;plate number;mrad", t->ID(), t->N()));
     diff->SetMarkerStyle(7);
     diff->Draw("ap");
-
-    // c1->cd(3)->DrawFrame(45, min_disp - 5.0, 145, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
-    // grdispX->SetMarkerColor(kRed);
-    // grdispX->SetMarkerStyle(7);
-    // grdispY->SetMarkerColor(kBlue);
-    // grdispY->SetMarkerStyle(7);
-    // grdisp->GetYaxis()->SetTitleOffset(1.5);
-    // grdisp->Add(grdispX, "p");
-    // grdisp->Add(grdispY, "p");
-    // grdisp->Draw("");
-
-    // grTX->SetTitle(Form("tan,  trid = %d,  nseg = %d;plate number;mrad", t->ID(), t->N()));
-    // grTX->SetMarkerColor(2);
-    // grTX->SetMarkerStyle(7);
-    // grTY->SetMarkerColor(4);
-    // grTY->SetMarkerStyle(7);
-    // grTX->Draw("ap");
-    // grTY->Draw("ap");
-    // grTY->SetTitleOffset(1.6);
 
     c1->cd(4);
     grY->SetTitle(Form("trid = %d,  nseg = %d", t->ID(), t->N()));
@@ -837,26 +832,62 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     grCoord->GetYaxis()->SetTitleOffset(1.6);
     grCoord->Draw("apl");
 
-    c1->cd(6);
+    c1->cd(8);
     grLat->SetTitle(Form("Lat Prec = %.1f GeV (trid = %d)", 1.0/inverse_Lat, t->ID()));
     grLat->GetXaxis()->SetTitle("Cell length");
     grLat->GetYaxis()->SetTitle("RMS (#mum)");
     grLat->GetYaxis()->SetTitleOffset(1.6);
     grLat->Draw("apl");
 
-    // c1->cd(6);
+    // // c1->cd(6);
+    // c1->cd(3);
+    // TText tx;
+    // tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
+    // tx.DrawTextNDC(0.1,0.8,Form("sigma_error(Coord) = %.3f micron", error_Coord));
+    // // tx.DrawTextNDC(0.1,0.7,Form("slope = %.4f", slope));
+    // tx.DrawTextNDC(0.1,0.7,Form("1/Prec(Coord) = %.6f", inverse_Coord));
+    // tx.DrawTextNDC(0.1,0.6,Form("Prec(Lat) = %.1f GeV", 1.0/inverse_Lat));
+    // tx.DrawTextNDC(0.1,0.5,Form("Cell length max = %d", icell_cut));
+    // tx.DrawTextNDC(0.1,0.4,Form("npl = %d  nseg = %d", t->Npl(), t->N()));
+    // tx.DrawTextNDC(0.1,0.3,Form("slope = %.4f", slope));
+    // tx.DrawTextNDC(0.1,0.2,Form("tan x = %.4f  tan y = %.4f", tanx, tany));
+    // tx.DrawTextNDC(0.1,0.1,Form("ini_mom = %.1f  ini_smearing = %.1f", ini_mom, smearing));
+
     c1->cd(3);
     TText tx;
-    tx.DrawTextNDC(0.1,0.9,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
-    tx.DrawTextNDC(0.1,0.8,Form("sigma_error(Coord) = %.3f micron", error_Coord));
-    // tx.DrawTextNDC(0.1,0.7,Form("slope = %.4f", slope));
-    tx.DrawTextNDC(0.1,0.7,Form("1/Prec(Coord) = %.6f", inverse_Coord));
-    tx.DrawTextNDC(0.1,0.6,Form("Prec(Lat) = %.1f GeV", 1.0/inverse_Lat));
-    tx.DrawTextNDC(0.1,0.5,Form("Cell length max = %d", icell_cut));
-    tx.DrawTextNDC(0.1,0.4,Form("npl = %d  nseg = %d", t->Npl(), t->N()));
-    tx.DrawTextNDC(0.1,0.3,Form("slope = %.4f", slope));
-    tx.DrawTextNDC(0.1,0.2,Form("tan x = %.4f  tan y = %.4f", tanx, tany));
-    tx.DrawTextNDC(0.1,0.1,Form("ini_mom = %.1f  ini_smearing = %.1f", ini_mom, smearing));
+    tx.DrawTextNDC(0.1,0.9,Form("Ptrue = %.1f GeV", t->P()));
+    tx.DrawTextNDC(0.1,0.8,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
+    tx.DrawTextNDC(0.1,0.7,Form("Prec(Lat) = %.1f GeV", 1.0/inverse_Lat));
+    tx.DrawTextNDC(0.1,0.6,Form("sigma_error(Coord) = %.3f micron", error_Coord));
+    tx.DrawTextNDC(0.1,0.5,Form("sigma_error(Lat) = %.3f micron", error_Lat));
+    tx.DrawTextNDC(0.1,0.4,Form("Cell length max = %d", icell_cut));
+    tx.DrawTextNDC(0.1,0.3,Form("npl = %d  nseg = %d", t->Npl(), t->N()));
+    tx.DrawTextNDC(0.1,0.2,Form("slope = %.4f", slope));
+    tx.DrawTextNDC(0.1,0.1,Form("tan x = %.4f  tan y = %.4f", tanx, tany));
+
+    c1->cd(6);
+    TText tx2;
+    tx2.DrawTextNDC(0.1,0.9,Form("ini_mom = %.1f GeV", ini_mom));
+    tx2.DrawTextNDC(0.1,0.8,Form("ini_smearing = %.1f micron", smearing));
+
+    c1->cd(7)->DrawFrame(t->GetSegmentFirst()->Plate() - 2, min_disp - 5.0, t->GetSegmentLast()->Plate() + 2, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
+    grdispX->SetMarkerColor(kRed);
+    grdispX->SetMarkerStyle(7);
+    grdispY->SetMarkerColor(kBlue);
+    grdispY->SetMarkerStyle(7);
+    grdisp->GetYaxis()->SetTitleOffset(1.5);
+    grdisp->Add(grdispX, "p");
+    grdisp->Add(grdispY, "p");
+    grdisp->Draw("");
+
+    // grTX->SetTitle(Form("tan,  trid = %d,  nseg = %d;plate number;mrad", t->ID(), t->N()));
+    // grTX->SetMarkerColor(2);
+    // grTX->SetMarkerStyle(7);
+    // grTY->SetMarkerColor(4);
+    // grTY->SetMarkerStyle(7);
+    // grTX->Draw("ap");
+    // grTY->Draw("ap");
+    // grTY->SetTitleOffset(1.6);
 
     c1->Print(file_name + ".pdf");
 

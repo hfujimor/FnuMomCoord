@@ -48,6 +48,7 @@ class FnuMomCoord {
         void ShowZ();
         void SetDataPar();
         void SetMCPar(double first_mom, double first_smear);
+        void SetIniMom(double first_mom);
         void ReadParFile(TString file_name);
         std::pair<double, double> CalcTrackAngle(EdbTrackP* t, int index);
         double CalcTrackAngleDiff(EdbTrackP* t, int index);
@@ -73,6 +74,7 @@ class FnuMomCoord {
         // static const int nseg;  //number of segments
         // static const int icellMax;  //maximum of cell length
         int nseg;  //number of segments
+        int npl; // number of plates
         int icellMax;  //maximum of cell length
         int icell_cut;
         double ini_mom;
