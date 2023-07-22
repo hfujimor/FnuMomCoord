@@ -38,7 +38,7 @@
 
 // int nseg_cut = 70;
 int nseg_cut = 180;
-int npl_cut = 100;
+int npl_cut = 50;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
 int data_area_y_min = 65000;
@@ -58,50 +58,64 @@ double angle_diff_cut = 1.0;
 // char *data_set = "/home/hfujimor/Documents/data/mu_random_linked_tracks.root";
 // char *data_set = "/home/hfujimor/Documents/Tracking/3tracking/linked_tracks_only_mu_7chi2_100seg.root";
 char *data_set = "/home/hfujimor/Documents/Tracking/3tracking/linked_tracks_only_mu_7chi2_110seg.root";
+// char *data_set = "/home/hfujimor/Documents/Tracking/3tracking/linked_tracks_reconnected_restricted_5mm_only_mu_7chi2_110seg.root";
 
 std::vector<EdbTrackP*> v_TrackP;
 
-void DataSetTrackVector(EdbPVRec *pvr){
+// void DataSetTrackVector(EdbPVRec *pvr){
 
-    int all_trk = pvr->Ntracks();
-    for(int itrk = 0; itrk < all_trk; itrk++){
-    // for(int itrk = 0; itrk < 1000; itrk++){
-    // for(int itrk = 0; itrk < 10; itrk++){
-        EdbTrackP *track = pvr->GetTrack(itrk);
-        v_TrackP.push_back(track);
-    }
-}
+//     int all_trk = pvr->Ntracks();
+//     for(int itrk = 0; itrk < all_trk; itrk++){
+//     // for(int itrk = 0; itrk < 1000; itrk++){
+//     // for(int itrk = 0; itrk < 10; itrk++){
+//         EdbTrackP *track = pvr->GetTrack(itrk);
+//         v_TrackP.push_back(track);
+//     }
+// }
 
 // void DataSetTrackVector(EdbPVRec *pvr){
 
 //     int all_trk = pvr->Ntracks();
 //     for(int itrk = 0; itrk < all_trk; itrk++){
 //         EdbTrackP *track = pvr->GetTrack(itrk);
-//         // if(track->GetSegmentFirst()->Plate() == 48 && CalcTrackAngleDiffMax(track) <= angle_diff_cut)
-//         if(CalcTrackAngleDiffMax(track) <= angle_diff_cut)
-//         // if(track->GetSegmentFirst()->Plate() == 48)
+//         if(track->GetSegmentFirst()->MCEvt() == track->GetSegmentLast()->MCEvt()){
 //             v_TrackP.push_back(track);
+//         }
 //     }
-// //printf("ntrk = %d\n", ntrk);
-// //printf("selected tracks = %d\n", v_TrackP.size());
 // }
 
+void DataSetTrackVector(EdbPVRec *pvr){
+
+    int all_trk = pvr->Ntracks();
+    for(int itrk = 0; itrk < all_trk; itrk++){
+        EdbTrackP *track = pvr->GetTrack(itrk);
+        bool ok = true;
+        int first_evt = track->MCEvt();
+        for(int iseg = 0; iseg < track->N(); iseg++){
+            int current_seg = track->GetSegment(iseg)->MCEvt();
+            if(first_evt != current_seg) ok = false;
+        }
+        if(ok) v_TrackP.push_back(track);
+    }  
+}
 
 int main(){
-    // TNtuple *nt = new TNtuple("nt", "", "Ptrue:Prec_RCM:sigma_error_RCM:Prec_inv_RCM:sigma_error_inv_RCM:Prec_Coord:sigma_error_Coord:Prec_inv_Coord:sigma_error_inv_Coord:Prec_inv_Coord_error:nicell:itype:trid:angle_diff_max:slope");
 	// TNtuple *nts = new TNtuple("nts","","sRMS_Coord:sRMS_RCM:sRMSerror_Coord:sRMSerror_RCM:trk_num:icell:type");  
     TCanvas *c1 = new TCanvas("c1");
     // TString file_name = "hogehoge";
-    // TString file_name = "MC_Reco/100GeV_200mrad_100mrad_ver2";
-    // TString file_name = "MC_Reco/100GeV_0mrad_0mrad_100seg";
-    // TString file_name = "MC_Reco/300GeV_0mrad_0mrad_100seg";
-    // TString file_name = "MC_Reco/1000GeV_0mrad_0mrad_100seg";
-    // TString file_name = "MC_Reco/200GeV_0mrad_0mrad_50seg";
-    // TString file_name = "MC_Reco/Random_0mrad_0mrad_100seg";
     // TString file_name = "MC_Reco/Uniform_1GeV_1000GeV_0mrad_0mrad_100seg";
-    TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
+    // TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
+    // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_100pl_100seg";
+    // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_100pl_110seg";
+    // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_90pl_110seg";
+    // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_80pl_110seg";
+    TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_50pl_110seg";
+
+    // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_80pl_110seg";
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_90pl_110seg";
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_100pl_110seg";
+    // TString file_name = "MU_MC_Reco/restricted_only_mu_7chi2_all_100pl_110seg";
+    // TString file_name = "MU_MC_Reco/restricted_5mm_only_mu_7chi2_all_100pl_110seg";
     
     c1->Print(file_name + ".pdf[");
 
@@ -109,27 +123,46 @@ int main(){
     EdbPVRec *pvr = new EdbPVRec;
     // dproc->ReadTracksTree(*pvr, Form("%s", data_set), Form("nseg>=%d&&s.eMCTrack==10", nseg_cut));
     dproc->ReadTracksTree(*pvr, Form("%s", data_set), Form("npl>=%d", npl_cut));
+    // dproc->ReadTracksTree(*pvr, Form("%s", data_set), "trid==12815||trid==34554||trid==42372");
     // dproc->ReadTracksTree(*pvr, Form("%s", data_set), "nseg>=50&&nseg<=60");
-    DataSetTrackVector(pvr);
+    // DataSetTrackVector(pvr);
 
     FnuMomCoord mc;
     mc.ReadParFile("par/MC_plate_1_110.txt");
     mc.ShowPar();
+    // for(int i = 0; pvr->Ntracks(); i++){
     // for(int i = 0; i < v_TrackP.size(); i++){
-    for(int i = 0; i < 10; i++){
-    // for(int i = 100; i < 200; i++){
-        // mc.CalcDataMomCoord(v_TrackP[i], c1, nt, file_name, 0);
-        // float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
-        float Pmeas = mc.CalcMomentum(v_TrackP[i], 1);
-        if(i <= 200) mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
-        if(i % 1000 == 0) printf("i = %d\n", i);
-        // mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
+    for(int i = 0; i < 200000; i++){
+
+
+        EdbTrackP *t = pvr->GetTrack(i);
+        int first_evt = t->GetSegmentFirst()->MCEvt();
+        int last_evt = t->GetSegmentLast()->MCEvt();
+        // bool ok = true;
+        // for(int iseg = 1; iseg < t->N(); iseg++){
+        //     EdbSegP *s = t->GetSegment(iseg);
+        //     if(first_evt != s->MCEvt()){
+        //         ok = false;
+        //         break;
+        //     } 
+        // }
+
+        // if(ok){
+        if(first_evt == last_evt){
+            // float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
+            // float Pmeas = mc.CalcMomentum(v_TrackP[i], 1);
+            // if(i <= 200) mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
+            float Pmeas = mc.CalcMomentum(t, 1);
+            if(i <= 200) mc.DrawMomGraphCoord(t, c1, file_name);
+            if(i % 1000 == 0) printf("i = %d\n", i);
+            // mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
+        }
     }
 
     c1->Print(file_name + ".pdf]");
     mc.WriteRootFile(file_name);
 
-    printf("selected track = %d\n", v_TrackP.size());
+    // printf("selected track = %d\n", v_TrackP.size());
 
     return 0;
 }

@@ -1,7 +1,7 @@
 nseg:                                    100
 icellMax:                               32
 ini_mom:                                 100
-smearing:                                0.4
+smearing:                                0.0
 X0:                                      4.571
 zW:                                      1.1
 z:                                       1450

@@ -562,7 +562,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             Ptrue = ini_mom; // zanteitekina P
             Prec_Coord = Prec_Coord < 0 ? -Prec_Coord : Prec_Coord;
             error_Coord = error_Coord < 0 ? -error_Coord : error_Coord;
-            if(Prec_Coord>7000) Prec_Coord=7000;
+            if(Prec_Coord>7000) Prec_Coord=7000.0;
 
         //Get Coord inverse monentum
             Da4->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
@@ -583,7 +583,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             Ptrue = ini_mom; // zanteitekina P
             Prec_Lat = Prec_Lat < 0 ? -Prec_Lat : Prec_Lat;
             error_Lat = error_Lat < 0 ? -error_Lat : error_Lat;
-            if(Prec_Lat>7000) Prec_Lat=7000;
+            if(Prec_Lat>7000) Prec_Lat=7000.0;
 
         //Get Lateral inverse monentum
             Da2->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
@@ -599,14 +599,20 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
             if(file_type==0){
                 // nt->Fill(Ptrue, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, icell, itype);
                 // nt->Fill(ini_mom, -999.0, -999.0, -999.0, -999.0, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, icell, itype, t->ID(), max_angle_diff, slope);
-                nt->Fill(ini_mom, Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, Prec_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+                nt->Fill(ini_mom, 1.0/inverse_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
                 // nt->Fill(ini_mom, Prec_RCM, error_RCM, inverse_RCM, error_RCM_in, -999.0, -999.0, -999.0, -999.0, icell, itype, t->ID(), max_angle_diff, slope);
             }
             else if(file_type==1){
-                nt->Fill(t->P(), Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, Prec_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+                // nt->Fill(t->P(), Prec_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, Prec_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+                nt->Fill(t->P(), 1.0/inverse_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
             }
         }
     }
+    delete Da1;
+    delete Da2;
+    delete Da3;
+    delete Da4;
+
     delete grCoord;
     delete grLat;
 
@@ -758,6 +764,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
         if(icell==16||icell==32){
             itype = 0;
 
+
         //Get Coord momentum
             Da3->SetParameters(ini_mom, sqrt(6)*pos_reso);
             grCoord->Fit(Da3, "Q", "", 0, icell);
@@ -766,7 +773,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
             Ptrue = ini_mom; // zanteitekina P
             Prec_Coord = Prec_Coord < 0 ? -Prec_Coord : Prec_Coord;
             error_Coord = error_Coord < 0 ? -error_Coord : error_Coord;
-            if(Prec_Coord>7000) Prec_Coord=7000;
+            if(Prec_Coord>7000.0) Prec_Coord=7000.0;
 
         //Get Coord inverse monentum
             Da4->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
@@ -787,7 +794,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
             Ptrue = ini_mom; // zanteitekina P
             Prec_Lat = Prec_Lat < 0 ? -Prec_Lat : Prec_Lat;
             error_Lat = error_Lat < 0 ? -error_Lat : error_Lat;
-            if(Prec_Lat>7000) Prec_Lat=7000;
+            if(Prec_Lat>7000.0) Prec_Lat=7000.0;
 
         //Get Lateral inverse monentum
             Da2->SetParameters(1.0/ini_mom, sqrt(6)*pos_reso);
@@ -828,7 +835,8 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     grY->Draw("ap");
 
     c1->cd(5);
-    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", 1.0/inverse_Coord, t->ID()));
+    // grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", 1.0/inverse_Coord, t->ID()));
+    grCoord->SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", Prec_Coord, t->ID()));
     grCoord->GetXaxis()->SetTitle("Cell length");
     grCoord->GetYaxis()->SetTitle("RMS (#mum)");
     grCoord->GetYaxis()->SetTitleOffset(1.6);
@@ -871,6 +879,7 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     TText tx2;
     tx2.DrawTextNDC(0.1,0.9,Form("ini_mom = %.1f GeV", ini_mom));
     tx2.DrawTextNDC(0.1,0.8,Form("ini_pos_reso = %.1f micron", pos_reso));
+    tx2.DrawTextNDC(0.1,0.7,Form("used npl = %d", npl));
 
     c1->cd(7)->DrawFrame(t->GetSegmentFirst()->Plate() - 2, min_disp - 5.0, t->GetSegmentLast()->Plate() + 2, max_disp + 5.0, Form("#deltax, #deltay,  trid = %d,  nseg = %d;plate number;#mum", t->ID(), t->N()));
     grdispX->SetMarkerColor(kRed);
@@ -892,6 +901,11 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     // grTY->SetTitleOffset(1.6);
 
     c1->Print(file_name + ".pdf");
+
+    delete Da1;
+    delete Da2;
+    delete Da3;
+    delete Da4;
 
     delete grX;
     delete grY;
