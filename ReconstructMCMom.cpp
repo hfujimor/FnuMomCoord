@@ -100,16 +100,18 @@ void DataSetTrackVector(EdbPVRec *pvr){
 }
 
 int main(){
+    clock_t start = clock();
+
 	// TNtuple *nts = new TNtuple("nts","","sRMS_Coord:sRMS_RCM:sRMSerror_Coord:sRMSerror_RCM:trk_num:icell:type");  
     TCanvas *c1 = new TCanvas("c1");
     // TString file_name = "hogehoge";
     // TString file_name = "MC_Reco/Uniform_1GeV_1000GeV_0mrad_0mrad_100seg";
-    // TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
+    TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_100pl_100seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_100pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_90pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_80pl_110seg";
-    TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_50pl_110seg";
+    // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_50pl_110seg";
 
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_80pl_110seg";
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_90pl_110seg";
@@ -130,9 +132,9 @@ int main(){
     FnuMomCoord mc;
     mc.ReadParFile("par/MC_plate_1_110.txt");
     mc.ShowPar();
-    // for(int i = 0; pvr->Ntracks(); i++){
-    // for(int i = 0; i < v_TrackP.size(); i++){
-    for(int i = 0; i < 200000; i++){
+    for(int i = 0; pvr->Ntracks(); i++){
+    // for(int i = 0; i < 200000; i++){
+    // for(int i = 0; i < 200; i++){
 
 
         EdbTrackP *t = pvr->GetTrack(i);
@@ -163,6 +165,9 @@ int main(){
     mc.WriteRootFile(file_name);
 
     // printf("selected track = %d\n", v_TrackP.size());
+    clock_t end = clock();
+    double tm = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("%.0f second\n", tm);
 
     return 0;
 }
