@@ -322,85 +322,249 @@ int FnuMomCoord::SetTrackArray(EdbTrackP *t, int file_type = 0){
 
 }
 
-void FnuMomCoord::CalcPosDiff(EdbTrackP *t, int plate_num){
+void FnuMomCoord::CalcPosDiff(EdbTrackP *t, int plate_num, int reco_type){
+    if(reco_type == 0){
+        double sum_square;
+        int first_plate = t->GetSegmentFirst()->Plate();
+        icell_cut = (plate_num - 1)/2 <= icellMax ? (plate_num - 1)/2 : icellMax;
+        for(int icell = 1; icell < icell_cut + 1; icell++){
+        // for(int icell = 1; icell < icellMax + 1; icell++){
+        // for(int icell = 5; icell < 6; icell++){
+            int allentry = 0;
+            int nentry = 0;
+            if(type=="AB"){
+                for(int i = 0; i < plate_num - icell * 2; i++)// plate_num is last plate - first plate, which have hits of a and b
+                { 
+                    int i0 = i;
+                    int i1 = i + icell;
+                    int i2 = i + icell * 2;
+                    if (i2 >= plate_num)
+                        break;
+                    if (i2 >= npl){
+                        // printf("i0 = %d\ti1 = %d\ti2 = %d\n", i0, i1, i2);
+                        break;
+                    }
+                        
+                    double x0 = track_array[i0][0];
+                    double x1 = track_array[i1][0];
+                    double x2 = track_array[i2][0];
 
-    double sum_square;
-    int first_plate = t->GetSegmentFirst()->Plate();
-    icell_cut = (plate_num - 1)/2 <= icellMax ? (plate_num - 1)/2 : icellMax;
-    for(int icell = 1; icell < icell_cut + 1; icell++){
-    // for(int icell = 1; icell < icellMax + 1; icell++){
-    // for(int icell = 5; icell < 6; icell++){
-        int allentry = 0;
-        int nentry = 0;
-        if(type=="AB"){
-            for(int i = 0; i < plate_num - icell * 2; i++)// plate_num is last plate - first plate, which have hits of a and b
-            { 
-                int i0 = i;
-                int i1 = i + icell;
-                int i2 = i + icell * 2;
-                if (i2 >= plate_num)
-                    continue;
-                if (i2 >= npl)
-                    continue;
+                    if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+                        continue;
 
-                double x0 = track_array[i0][0];
-                double x1 = track_array[i1][0];
-                double x2 = track_array[i2][0];
+                    double z0 = track_array[i0][2];
+                    double z1 = track_array[i1][2];
+                    double z2 = track_array[i2][2];
+                    // double delta_ax = -x2 + 2 * x1 - x0;
+                    double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
+                    
+                    // if(abs(delta_ax) < 0.00001) continue;
+                    delta_array[allentry] = delta_ax;
 
-                if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
-                    continue;
+                    // printf("delta_array[%d] = %f\n", allentry, delta_ax);
+                    // printf("deltaArray[%d][%d] = %f\tdeltaArray[%d][%d] = %f\n", itrk, nentry, delta_ax, itrk, nentry, deltaArray[itrk][nentry]);
+                    allentry++;
+                }
+                for (int i = 0; i < plate_num - icell * 2; i++)
+                {
+                    int i0 = i;
+                    int i1 = i + icell;
+                    int i2 = i + icell * 2;
+                    if (i2 >= plate_num)
+                        break;
+                    if (i2 >= npl)
+                        break;
 
-                double z0 = track_array[i0][2];
-                double z1 = track_array[i1][2];
-                double z2 = track_array[i2][2];
-                // double delta_ax = -x2 + 2 * x1 - x0;
-                double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
-                
-                // if(abs(delta_ax) < 0.00001) continue;
-                delta_array[allentry] = delta_ax;
+                    double x0 = track_array[i0][1];
+                    double x1 = track_array[i1][1];
+                    double x2 = track_array[i2][1];
 
-                // printf("delta_array[%d] = %f\n", allentry, delta_ax);
-                // printf("deltaArray[%d][%d] = %f\tdeltaArray[%d][%d] = %f\n", itrk, nentry, delta_ax, itrk, nentry, deltaArray[itrk][nentry]);
-                allentry++;
+                    if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+                        continue;
+
+                    double z0 = track_array[i0][2];
+                    double z1 = track_array[i1][2];
+                    double z2 = track_array[i2][2];
+                    // double delta_ax = -x2 + 2 * x1 - x0;
+                    double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
+                    // if(abs(delta_ax) < 0.00001) continue;
+                    delta_array[allentry] = delta_ax;
+                    // printf("delta_array[%d] = %f\n", allentry, delta_ax);
+                    allentry++;
+                }
             }
-            for (int i = 0; i < plate_num - icell * 2; i++)
-            {
-                int i0 = i;
-                int i1 = i + icell;
-                int i2 = i + icell * 2;
-                if (i2 >= plate_num)
-                    continue;
-                if (i2 >= npl)
-                    continue;
+            allentryArray[icell-1] = allentry;
 
-                double x0 = track_array[i0][1];
-                double x1 = track_array[i1][1];
-                double x2 = track_array[i2][1];
-
-                if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
-                    continue;
-
-                double z0 = track_array[i0][2];
-                double z1 = track_array[i1][2];
-                double z2 = track_array[i2][2];
-                // double delta_ax = -x2 + 2 * x1 - x0;
-                double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
-                // if(abs(delta_ax) < 0.00001) continue;
-                delta_array[allentry] = delta_ax;
-                // printf("delta_array[%d] = %f\n", allentry, delta_ax);
-                allentry++;
+            sum_square = 0;
+            for(int i = 0; i < allentry; i++){
+                sum_square += delta_array[i] * delta_array[i];
             }
-        }
-        allentryArray[icell-1] = allentry;
+            cal_CoordArray[icell-1] = sum_square / allentry;
 
-        sum_square = 0;
-        for(int i = 0; i < allentry; i++){
-            sum_square += delta_array[i] * delta_array[i];
+            // relvarArray[iraw][icell-1] = sum_square / allentry;
+            // printf("relvarArray[%d][%d] = %f\tsqrt = %f\n", iraw, icell-1, relvarArray[iraw][icell-1], sqrt(sum_square / allentry));
         }
-        cal_CoordArray[icell-1] = sum_square / allentry;
+    }
 
-        // relvarArray[iraw][icell-1] = sum_square / allentry;
-        // printf("relvarArray[%d][%d] = %f\tsqrt = %f\n", iraw, icell-1, relvarArray[iraw][icell-1], sqrt(sum_square / allentry));
+    // divide one track as two and reconstruct them
+    if(reco_type == 1){
+
+        double sum_square;
+        int first_plate = t->GetSegmentFirst()->Plate();
+        int npl_cut = npl/2;
+        icell_cut = (npl_cut - 1) / 2 <= icellMax ? (npl_cut - 1) / 2 : icellMax;
+
+    // this calculation will be cleaned for the future
+    // calculate first half track
+        for(int icell = 1; icell < icell_cut + 1; icell++){
+            int allentry = 0;
+            int nentry = 0;
+            if(type=="AB"){
+                for(int i = 0; i < plate_num - icell * 2; i++)// plate_num is last plate - first plate, which have hits of a and b
+                { 
+                    int i0 = i;
+                    int i1 = i + icell;
+                    int i2 = i + icell * 2;
+
+                    if (i2 >= npl_cut){
+                        // printf("npl_cut = %d\ti0 = %d\ti1 = %d\ti2 = %d\n", npl_cut, i0, i1, i2);
+                        break;
+                    }
+                        
+                    double x0 = track_array[i0][0];
+                    double x1 = track_array[i1][0];
+                    double x2 = track_array[i2][0];
+
+                    if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+                        continue;
+
+                    double z0 = track_array[i0][2];
+                    double z1 = track_array[i1][2];
+                    double z2 = track_array[i2][2];
+                    // double delta_ax = -x2 + 2 * x1 - x0;
+                    double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
+                    
+                    // if(abs(delta_ax) < 0.00001) continue;
+                    delta_array[allentry] = delta_ax;
+
+                    // printf("delta_array[%d] = %f\n", allentry, delta_ax);
+                    // printf("deltaArray[%d][%d] = %f\tdeltaArray[%d][%d] = %f\n", itrk, nentry, delta_ax, itrk, nentry, deltaArray[itrk][nentry]);
+                    allentry++;
+                }
+                for (int i = 0; i < plate_num - icell * 2; i++)
+                {
+                    int i0 = i;
+                    int i1 = i + icell;
+                    int i2 = i + icell * 2;
+                    if (i2 >= npl_cut)
+                        break;
+
+                    double x0 = track_array[i0][1];
+                    double x1 = track_array[i1][1];
+                    double x2 = track_array[i2][1];
+
+                    if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+                        continue;
+
+                    double z0 = track_array[i0][2];
+                    double z1 = track_array[i1][2];
+                    double z2 = track_array[i2][2];
+                    // double delta_ax = -x2 + 2 * x1 - x0;
+                    double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
+                    // if(abs(delta_ax) < 0.00001) continue;
+                    delta_array[allentry] = delta_ax;
+                    // printf("delta_array[%d] = %f\n", allentry, delta_ax);
+                    allentry++;
+                }
+            }
+            allentryArray[icell-1] = allentry;
+
+            sum_square = 0;
+            for(int i = 0; i < allentry; i++){
+                sum_square += delta_array[i] * delta_array[i];
+            }
+            cal_CoordArray[icell-1] = sum_square / allentry;
+
+            // relvarArray[iraw][icell-1] = sum_square / allentry;
+            // printf("relvarArray[%d][%d] = %f\tsqrt = %f\n", iraw, icell-1, relvarArray[iraw][icell-1], sqrt(sum_square / allentry));
+        }
+
+    // caluculate second half track
+        for(int icell = 1; icell < icell_cut + 1; icell++){
+            int allentry = 0;
+            int nentry = 0;
+            if(type=="AB"){
+                for(int i = 0; i < plate_num - icell * 2; i++)// plate_num is last plate - first plate, which have hits of a and b
+                {
+                    int i0 = i + npl_cut;
+                    int i1 = i + icell + npl_cut;
+                    int i2 = i + icell * 2 + npl_cut;
+
+                    if (i2 >= npl_cut * 2){
+                        // printf("npl_cut = %d\ti0 = %d\ti1 = %d\ti2 = %d\n", npl_cut, i0, i1, i2);
+                        break;
+                    }
+                        
+                    double x0 = track_array[i0][0];
+                    double x1 = track_array[i1][0];
+                    double x2 = track_array[i2][0];
+
+                    if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+                        continue;
+
+                    double z0 = track_array[i0][2];
+                    double z1 = track_array[i1][2];
+                    double z2 = track_array[i2][2];
+                    // double delta_ax = -x2 + 2 * x1 - x0;
+                    double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
+                    
+                    // if(abs(delta_ax) < 0.00001) continue;
+                    delta_array[allentry] = delta_ax;
+
+                    // printf("delta_array[%d] = %f\n", allentry, delta_ax);
+                    // printf("deltaArray[%d][%d] = %f\tdeltaArray[%d][%d] = %f\n", itrk, nentry, delta_ax, itrk, nentry, deltaArray[itrk][nentry]);
+                    allentry++;
+                }
+                for (int i = 0; i < plate_num - icell * 2; i++)
+                {
+                    int i0 = i + npl_cut;
+                    int i1 = i + icell + npl_cut;
+                    int i2 = i + icell * 2 + npl_cut;
+                    if (i2 >= npl_cut * 2)
+                        break;
+
+                    double x0 = track_array[i0][1];
+                    double x1 = track_array[i1][1];
+                    double x2 = track_array[i2][1];
+
+                    if(abs(x0) < 0.00001 || abs(x1) < 0.00001 || abs(x2) < 0.00001) // if each segment is missing, calculation is skipped
+                        continue;
+
+                    double z0 = track_array[i0][2];
+                    double z1 = track_array[i1][2];
+                    double z2 = track_array[i2][2];
+                    // double delta_ax = -x2 + 2 * x1 - x0;
+                    double delta_ax = x2 - x1 - (x1 - x0)/(z1 - z0) * (z2 - z1);
+                    // if(abs(delta_ax) < 0.00001) continue;
+                    delta_array[allentry] = delta_ax;
+                    // printf("delta_array[%d] = %f\n", allentry, delta_ax);
+                    allentry++;
+                }
+            }
+            LateralEntryArray[icell-1] = allentry;
+
+            sum_square = 0;
+            for(int i = 0; i < allentry; i++){
+                sum_square += delta_array[i] * delta_array[i];
+            }
+            cal_LateralArray[icell-1] = sum_square / allentry;
+
+            // relvarArray[iraw][icell-1] = sum_square / allentry;
+            // printf("relvarArray[%d][%d] = %f\tsqrt = %f\n", iraw, icell-1, relvarArray[iraw][icell-1], sqrt(sum_square / allentry));
+        }
+
+
+
     }
 
 }
@@ -475,7 +639,7 @@ void FnuMomCoord::CalcLatPosDiff(EdbTrackP *t, int plate_num){
 // }
 
 // void FnuMomCoord::CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type){
-float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
+float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type, int reco_type){
     // TGraphErrors *grCoord = new TGraphErrors();
     // TGraphErrors *grLat = new TGraphErrors();
     TGraphErrors grCoord;
@@ -541,7 +705,8 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
     }
 
 // log and modify radiation length
-    TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
+    // TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
+    TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))**2*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da3 = new TF1("Da3", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
@@ -549,7 +714,15 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
-    TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    TF1 *Da2;
+    if(reco_type == 0){
+        // Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+        Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))**2*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    }
+    if(reco_type == 1){
+        // Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);    
+        Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))**2*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);    
+    }
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     if(file_type == 1) SetIniMom(t->P());
     for(int icell = 1; icell < icell_cut + 1; icell++){
@@ -621,20 +794,20 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type){
     return 1.0/inverse_Coord;
 }
 
-float FnuMomCoord::CalcMomentum(EdbTrackP *t, int file_type){
+float FnuMomCoord::CalcMomentum(EdbTrackP *t, int file_type, int reco_type){
     int plate_num = SetTrackArray(t, file_type);
     // printf("plate_num = %d\tnpl = %d\n", plate_num, t->Npl());
-    CalcPosDiff(t, plate_num);
-    CalcLatPosDiff(t, plate_num);
+    CalcPosDiff(t, plate_num, reco_type);
+    if(reco_type == 0) CalcLatPosDiff(t, plate_num);
     // DrawDataMomGraphCoord(t, c1, nt, file_name, plate_num);
     // DrawMomGraphCoord(t, c1, file_name);
-    float Pmeas = CalcMomCoord(t, file_type);
+    float Pmeas = CalcMomCoord(t, file_type, reco_type);
     return Pmeas;
 }
 
 // void FnuMomCoord::DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num){
 // void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int plate_num){
-void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name){
+void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int reco_type){
     TGraphErrors grCoord;
     TGraphErrors grLat;
     TGraph *grX = new TGraph();
@@ -727,7 +900,8 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
         rmserror_Lat = rms_Lat / sqrt(LateralEntryArray[i]);
         if(cal_s=="Origin_log_modify") {
             // rmserror_Coord = rms_Coord / sqrt(nentryArray[i]);
-            rmserror_Lat = rms_Lat / sqrt((t->Npl()-1.0) / (2.0*(i+1.0)));
+            if(reco_type == 0) rmserror_Lat = rms_Lat / sqrt((t->Npl()-1.0) / (2.0*(i+1.0)));
+            if(reco_type == 1) rmserror_Lat = rms_Lat / sqrt((t->Npl()-1.0) / (1.0*(i+1.0)));
             // if(type=="AB") {
             //     rmserror_Coord = rms_Coord / sqrt((nseg-1.0) / (2.0*(i+1.0)));
             // }
@@ -743,7 +917,8 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     }
 
 // log and modify radiation length
-    TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
+    // TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
+    TF1 *Da4 = new TF1("Da4", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))**2*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da3 = new TF1("Da3", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
@@ -751,7 +926,15 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100); 
     // TF1 *Da2 = new TF1("Da2", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(4./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
-    TF1 *Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    TF1 *Da2;
+    if(reco_type == 0){
+        // Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+        Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))**2*[0]**2+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100);
+    }
+    if(reco_type == 1){
+        // Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);    
+        Da2 = new TF1("Da2", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))**2*[0]**2+[1]**2)", z, z, X0*1000.0, z, X0*1000.0),0,100);    
+    }        
     // TF1 *Da1 = new TF1("Da1", Form("sqrt(2./3.0*(13.6e-3*%f*x)**2*%f*x/%f*(1+0.038*TMath::Log(x*%f/%f))/([0]**2)+[1]**2)", z*sqrt(1.0 + slope*slope), z*sqrt(1.0 + slope*slope), X0*1000.0, z*sqrt(1.0 + slope*slope), X0*1000.0),0,100); 
     for(int icell = 1; icell < icell_cut + 1; icell++){
         // if(icell==1||icell==2||icell==4||icell==8||icell==16||icell==32){
@@ -827,15 +1010,24 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     grY->Draw("ap");
 
     c1->cd(5);
-    grCoord.SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", 1.0/inverse_Coord, t->ID()));
-    // grCoord.SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", Prec_Coord, t->ID()));
+    if(reco_type == 0){
+        grCoord.SetTitle(Form("Coord Prec = %.1f GeV (trid = %d)", 1.0/inverse_Coord, t->ID()));
+    }
+    if(reco_type == 1){
+        grCoord.SetTitle(Form("First Prec = %.1f GeV (trid = %d)", 1.0/inverse_Coord, t->ID()));
+    }
     grCoord.GetXaxis()->SetTitle("Cell length");
     grCoord.GetYaxis()->SetTitle("RMS (#mum)");
     grCoord.GetYaxis()->SetTitleOffset(1.6);
     grCoord.Draw("apl");
 
     c1->cd(8);
-    grLat.SetTitle(Form("Lat Prec = %.1f GeV (trid = %d)", 1.0/inverse_Lat, t->ID()));
+    if(reco_type == 0){
+        grLat.SetTitle(Form("Lat Prec = %.1f GeV (trid = %d)", 1.0/inverse_Lat, t->ID()));
+    }
+    if(reco_type == 1){
+        grLat.SetTitle(Form("Second Prec = %.1f GeV (trid = %d)", 1.0/inverse_Lat, t->ID()));
+    }
     grLat.GetXaxis()->SetTitle("Cell length");
     grLat.GetYaxis()->SetTitle("RMS (#mum)");
     grLat.GetYaxis()->SetTitleOffset(1.6);
@@ -858,14 +1050,22 @@ void FnuMomCoord::DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name
     c1->cd(3);
     TText tx;
     tx.DrawTextNDC(0.1,0.9,Form("Ptrue = %.1f GeV", t->P()));
-    tx.DrawTextNDC(0.1,0.8,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
-    tx.DrawTextNDC(0.1,0.7,Form("Prec(Lat) = %.1f GeV", 1.0/inverse_Lat));
-    tx.DrawTextNDC(0.1,0.6,Form("sigma_error(Coord) = %.3f micron", error_Coord_in));
-    tx.DrawTextNDC(0.1,0.5,Form("sigma_error(Lat) = %.3f micron", error_Lat_in));
     tx.DrawTextNDC(0.1,0.4,Form("Cell length max = %d", icell_cut));
     tx.DrawTextNDC(0.1,0.3,Form("npl = %d  nseg = %d", t->Npl(), t->N()));
     tx.DrawTextNDC(0.1,0.2,Form("slope = %.4f", slope));
     tx.DrawTextNDC(0.1,0.1,Form("tan x = %.4f  tan y = %.4f", tanx, tany));
+    if(reco_type == 0){
+        tx.DrawTextNDC(0.1,0.8,Form("Prec(Coord) = %.1f GeV", 1.0/inverse_Coord));
+        tx.DrawTextNDC(0.1,0.7,Form("Prec(Lat) = %.1f GeV", 1.0/inverse_Lat));
+        tx.DrawTextNDC(0.1,0.6,Form("sigma_error(Coord) = %.3f micron", error_Coord_in));
+        tx.DrawTextNDC(0.1,0.5,Form("sigma_error(Lat) = %.3f micron", error_Lat_in));
+    }
+    if(reco_type == 1){
+        tx.DrawTextNDC(0.1,0.8,Form("Prec(First) = %.1f GeV", 1.0/inverse_Coord));
+        tx.DrawTextNDC(0.1,0.7,Form("Prec(Second) = %.1f GeV", 1.0/inverse_Lat));
+        tx.DrawTextNDC(0.1,0.6,Form("sigma_error(First) = %.3f micron", error_Coord_in));
+        tx.DrawTextNDC(0.1,0.5,Form("sigma_error(Second) = %.3f micron", error_Lat_in));
+    }
 
     c1->cd(6);
     TText tx2;

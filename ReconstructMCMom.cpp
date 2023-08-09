@@ -38,7 +38,7 @@
 
 // int nseg_cut = 70;
 int nseg_cut = 180;
-int npl_cut = 50;
+int npl_cut = 100;
 int data_area_x_min = 97000;
 int data_area_x_max = 102100;
 int data_area_y_min = 65000;
@@ -106,12 +106,13 @@ int main(){
     TCanvas *c1 = new TCanvas("c1");
     // TString file_name = "hogehoge";
     // TString file_name = "MC_Reco/Uniform_1GeV_1000GeV_0mrad_0mrad_100seg";
-    TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
+    // TString file_name = "MU_MC_Reco/only_mu_7chi2_100seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_100pl_100seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_100pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_90pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_80pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_50pl_110seg";
+    TString file_name = "MU_MC_Reco/rejected_anglecut1mrad__divided_only_mu_7chi2_all_100pl_110seg";
 
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_80pl_110seg";
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_90pl_110seg";
@@ -132,10 +133,9 @@ int main(){
     FnuMomCoord mc;
     mc.ReadParFile("par/MC_plate_1_110.txt");
     mc.ShowPar();
-    for(int i = 0; pvr->Ntracks(); i++){
-    // for(int i = 0; i < 200000; i++){
-    // for(int i = 0; i < 200; i++){
-
+    // for(int i = 0; pvr->Ntracks(); i++){
+    for(int i = 0; i < 200000; i++){
+    // for(int i = 0; i < 1000; i++){
 
         EdbTrackP *t = pvr->GetTrack(i);
         int first_evt = t->GetSegmentFirst()->MCEvt();
@@ -150,12 +150,13 @@ int main(){
         // }
 
         // if(ok){
-        if(first_evt == last_evt){
+        // if(first_evt == last_evt){
+        if(first_evt == last_evt && mc.CalcTrackAngleDiffMax(t) <= angle_diff_cut){
             // float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
             // float Pmeas = mc.CalcMomentum(v_TrackP[i], 1);
             // if(i <= 200) mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
-            float Pmeas = mc.CalcMomentum(t, 1);
-            if(i <= 200) mc.DrawMomGraphCoord(t, c1, file_name);
+            float Pmeas = mc.CalcMomentum(t, 1, 1);
+            if(i <= 200) mc.DrawMomGraphCoord(t, c1, file_name, 1);
             if(i % 1000 == 0) printf("i = %d\n", i);
             // mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
         }

@@ -59,12 +59,12 @@ class FnuMomCoord {
         // void DataSetTrackVector(EdbPVRec *pvr);
         void SetZArray(char* fname);
         int SetTrackArray(EdbTrackP *t, int file_type);
-        void CalcPosDiff(EdbTrackP *t, int plate_num);
+        void CalcPosDiff(EdbTrackP *t, int plate_num, int reco_type);
         void CalcLatPosDiff(EdbTrackP *t, int plate_num);
-        float CalcMomCoord(EdbTrackP *t, int file_type);
+        float CalcMomCoord(EdbTrackP *t, int file_type, int reco_type);
         // void CalcDataMomCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int file_type = 0);
-        float CalcMomentum(EdbTrackP *t, int file_type = 0);
-        void DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name);
+        float CalcMomentum(EdbTrackP *t, int file_type = 0, int reco_type = 0);
+        void DrawMomGraphCoord(EdbTrackP *t, TCanvas *c1, TString file_name, int reco_type = 0);
         // void DrawDataMomGraphCoord(EdbTrackP *t, TCanvas *c1, TNtuple *nt, TString file_name, int plate_num);
         void WriteRootFile(TString file_name);
 
