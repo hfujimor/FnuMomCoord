@@ -57,7 +57,7 @@ FnuMomCoord::FnuMomCoord(){
     z = 1450.0;
     type = "AB";
     cal_s = "Origin_log_modify";
-    nt = new TNtuple("nt", "", "Ptrue:Prec_Coord:sigma_error_Coord:Prec_inv_Coord:sigma_error_inv_Coord:Prec_inv_Coord_error:Prec_Lat:sigma_error_Lat:Prec_inv_Lat:sigma_error_inv_Lat:nicell:itype:trid:angle_diff_max:slope");
+    nt = new TNtuple("nt", "", "Ptrue:Prec_Coord:sigma_error_Coord:Prec_inv_Coord:sigma_error_inv_Coord:Prec_inv_Coord_error:Prec_Lat:sigma_error_Lat:Prec_inv_Lat:sigma_error_inv_Lat:nicell:evtid:trid:angle_diff_max:slope");
 
     std::cout << "success" << std::endl;
 }
@@ -775,11 +775,11 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type, int reco_type){
 
             if(file_type==0){
                 // nt->Fill(ini_mom, 1.0/inverse_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
-                nt->Fill(ini_mom, 1.0/inverse_Coord, -999.0, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, -999.0, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+                nt->Fill(ini_mom, 1.0/inverse_Coord, -999.0, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, -999.0, inverse_Lat, error_Lat_in, icell, t->MCEvt(), t->ID(), max_angle_diff, slope);
             }
             else if(file_type==1){
                 // nt->Fill(t->P(), 1.0/inverse_Coord, error_Coord, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, error_Lat, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
-                nt->Fill(t->P(), 1.0/inverse_Coord, -999.0, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, -999.0, inverse_Lat, error_Lat_in, icell, itype, t->ID(), max_angle_diff, slope);
+                nt->Fill(t->P(), 1.0/inverse_Coord, -999.0, inverse_Coord, error_Coord_in, inverse_Coord_error, 1.0/inverse_Lat, -999.0, inverse_Lat, error_Lat_in, icell, t->MCEvt(), t->ID(), max_angle_diff, slope);
             }
         }
     }

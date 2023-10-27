@@ -43,7 +43,7 @@ int data_area_x_min = 97000;
 int data_area_x_max = 102100;
 int data_area_y_min = 65000;
 int data_area_y_max = 70100;
-double angle_diff_cut = 1.0;
+double angle_diff_cut = 0.5;
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root";
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks_reconnected.root";
 // char *data_set = "../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks_reconnected_narrow.root";
@@ -84,7 +84,7 @@ int main(){
     TCanvas *c1 = new TCanvas("c1");
     // TString file_name = "hogehoge";
     // TString file_name = "Data_Reco/Meas";
-    TString file_name = "Data_Reco/rejected_divided_vert32063_pl053-167_NewTFD_alignTFD2_reco32_100pl";
+    TString file_name = "Data_Reco/rejected_modified_anglecut0.5mrad_divided_vert32063_pl053-167_NewTFD_alignTFD2_reco32_100pl";
     
     c1->Print(file_name + ".pdf[");
 
