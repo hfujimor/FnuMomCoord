@@ -43,7 +43,7 @@ int data_area_x_min = 97000;
 int data_area_x_max = 102100;
 int data_area_y_min = 65000;
 int data_area_y_max = 70100;
-double angle_diff_cut = 5.0;
+double angle_diff_cut = 1.0;
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_100GeV_200mrad_100mrad.root";
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_100GeV_0mrad_0mrad.root";
 // char *data_set = "/home/hfujimor/Documents/Measurement/FASER/F222/MC/mot/linked_tracks_100GeV_0mrad_0mrad_1k.root";
@@ -112,7 +112,7 @@ int main(){
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_90pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_80pl_110seg";
     // TString file_name = "MU_MC_Reco/rejected_only_mu_7chi2_all_50pl_110seg";
-    TString file_name = "MU_MC_Reco/rejected_modified_anglecut5mrad_divided_only_mu_7chi2_all_100pl_110seg";
+    TString file_name = "MU_MC_Reco/rejected_modified_anglecut1mrad_divided_only_mu_7chi2_all_100pl_110seg";
 
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_80pl_110seg";
     // TString file_name = "MU_MC_Reco/only_mu_7chi2_all_90pl_110seg";
@@ -155,8 +155,8 @@ int main(){
             // float Pmeas = mc.CalcMomentum(v_TrackP[i], 0);
             // float Pmeas = mc.CalcMomentum(v_TrackP[i], 1);
             // if(i <= 200) mc.DrawMomGraphCoord(v_TrackP[i], c1, file_name);
-            float Pmeas = mc.CalcMomentum(t, 1, 1);
-            // float Pmeas = mc.CalcMomentum(t, 1, 0);
+            // float Pmeas = mc.CalcMomentum(t, 1, 1);
+            float Pmeas = mc.CalcMomentum(t, 1, 0);
             if(i <= 200) mc.DrawMomGraphCoord(t, c1, file_name, 1);
             // if(i <= 200) mc.DrawMomGraphCoord(t, c1, file_name, 0);
             if(i % 1000 == 0) printf("i = %d\n", i);
