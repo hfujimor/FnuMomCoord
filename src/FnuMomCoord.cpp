@@ -669,7 +669,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type, int reco_type){
         rmserror_Coord = rms_Coord / sqrt(allentryArray[i]);
         if(cal_s=="Origin_log_modify") {
             // rmserror_Coord = rms_Coord / sqrt(nentryArray[i]);
-            rmserror_Coord = rms_Coord / sqrt((t->Npl()-1.0) / (1.0*(i+1.0)));
+            rmserror_Coord = rms_Coord / sqrt((npl-1.0) / (1.0*(i+1.0)));
             // if(type=="AB") {
             //     rmserror_Coord = rms_Coord / sqrt((nseg-1.0) / (2.0*(i+1.0)));
             // }
@@ -689,7 +689,7 @@ float FnuMomCoord::CalcMomCoord(EdbTrackP *t, int file_type, int reco_type){
         rmserror_Lat = rms_Lat / sqrt(LateralEntryArray[i]);
         if(cal_s=="Origin_log_modify") {
             // rmserror_Coord = rms_Coord / sqrt(nentryArray[i]);
-            rmserror_Lat = rms_Lat / sqrt((t->Npl()-1.0) / (2.0*(i+1.0)));
+            rmserror_Lat = rms_Lat / sqrt((npl-1.0) / (2.0*(i+1.0)));
             // if(type=="AB") {
             //     rmserror_Coord = rms_Coord / sqrt((nseg-1.0) / (2.0*(i+1.0)));
             // }
