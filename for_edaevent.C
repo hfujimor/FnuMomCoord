@@ -568,6 +568,7 @@ void for_edaevent(TCut cut_parameter = "nseg>=87"){
     // eda = new EdbEDA(file_name, 100, cut_parameter);
     // eda = new EdbEDA("../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root", 100, "nseg>=87");
     eda = new EdbEDA("../../Measurement/FASER/F222/data/F222_zone3_vertex003_test2/reco43_095000_065000/v13/linked_tracks.root", 100, cut_parameter);
-    ReadParFile("par/Data_up_to_200plates.txt");
+    ReadParFile("par/MC_plate_1_100.txt");
+    // ReadParFile("par/Data_up_to_200plates.txt");
 
 }
