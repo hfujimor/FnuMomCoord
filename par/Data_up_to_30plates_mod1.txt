@@ -1,0 +1,11 @@
+nseg:                                    30
+npl:                                     30
+icellMax:                                8
+ini_mom:                                 100
+pos_reso:                                0.2
+smearing:                                0
+X0:                                      4.455
+zW:                                      1.09
+z:                                       1430
+type:                                    AB
+cal_s:                                   Origin_log_modify

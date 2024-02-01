@@ -2,11 +2,11 @@
 
 void par_sample(){
     TEnv env;
-    TString file_name = "Data_up_to_100plates_mod1.txt";
+    TString file_name = "Data_up_to_30plates_mod1.txt";
 
-    env.SetValue("nseg", 200);
-    env.SetValue("npl", 100);
-    env.SetValue("icellMax", 16);
+    env.SetValue("nseg", 30);
+    env.SetValue("npl", 30);
+    env.SetValue("icellMax", 8);
     env.SetValue("ini_mom", 100.0);
     env.SetValue("pos_reso", 0.2); 
     env.SetValue("smearing", 0.0);
